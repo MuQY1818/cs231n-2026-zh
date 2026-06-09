@@ -1,0 +1,40 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local environments
+.env
+.venv/
+venv/
+env/
+
+# Downloaded datasets and generated artifacts
+assignment*/cs231n/datasets/*
+!assignment*/cs231n/datasets/*.sh
+assignment3/data/
+assignment3/pretrained_model/
+assignment3/results/
+assignment*/cs231n/saved/*
+!assignment1/cs231n/saved/keep.md
+
+# Large or generated files
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pt
+*.pth
+*.ckpt
+*.zip
+*.tar
+*.tar.gz
+*.pdf
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

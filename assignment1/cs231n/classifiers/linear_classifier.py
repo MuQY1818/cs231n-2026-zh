@@ -23,31 +23,31 @@ class LinearClassifier(object):
         verbose=False,
     ):
         """
-        Train 这个 linear 分类器 使用 stochastic 梯度 descent.
+        使用随机梯度下降训练这个线性分类器。
 
         输入:
-        - X: A numpy 数组 的 形状 (N, D) containing 训练数据; there are N
-          训练 样本 each 的 维度 D.
-        - y: A numpy 数组 的 形状 (N,) containing 训练 标签; y[i] = c
-          均值 该 X[i] has 标签 0 <= c < C 用于 C 类别.
-        - learning_rate: (float) 学习率 用于 optimization.
-        - reg: (float) 正则化 strength.
-        - num_iters: (integer) 数量 steps 到 take when optimizing
-        - batch_size: (integer) 数量 训练 样本 到 使用 at each step.
-        - verbose: (boolean) If true, print progress during optimization.
+        - X: 形状为 (N, D) 的 numpy 数组，包含训练数据；
+          其中有 N 个训练样本，每个样本维度为 D。
+        - y: 形状为 (N,) 的 numpy 数组，包含训练标签；
+          y[i] = c 表示 X[i] 的标签为 c，且 0 <= c < C。
+        - learning_rate: (float) 优化时使用的学习率。
+        - reg: (float) 正则化强度。
+        - num_iters: (integer) 优化时迭代的步数。
+        - batch_size: (integer) 每一步使用的训练样本数量。
+        - verbose: (boolean) 若为 true，则在优化过程中打印进度。
 
-        Outputs:
-        A list containing 值 的 损失 函数 at each 训练 iteration.
+        输出:
+        一个列表，包含每次训练迭代时的损失值。
         """
         num_train, dim = X.shape
         num_classes = (
             np.max(y) + 1
-        )  # assume y takes 值 0...K-1 其中 K is 数量 类别
+        )  # 假设 y 的取值为 0...K-1，其中 K 是类别数。
         if self.W is None:
-            # lazily 初始化 W
+            # 懒初始化 W。
             self.W = 0.001 * np.random.randn(dim, num_classes)
 
-        # Run stochastic 梯度 descent 到 optimize W
+        # 运行随机梯度下降来优化 W。
         loss_history = []
         for it in range(num_iters):
             X_batch = None
@@ -55,14 +55,12 @@ class LinearClassifier(object):
 
             #########################################################################
             # TODO:                                                                 #
-            # Sample batch_size elements 来自 训练数据 并 their           #
-            # corresponding 标签 到 使用 在 这个 round 的 梯度 descent.        #
-            # 将数据存储 在 X_batch 并 their corresponding 标签 在           #
-            # y_batch; after sampling X_batch 应该 have 形状 (batch_size, dim)   #
-            # and y_batch 应该 have 形状 (batch_size,)                           #
+            # 从训练数据中采样 batch_size 个元素及其对应标签，                     #
+            # 用于这一轮梯度下降。将采样数据存入 X_batch，                         #
+            # 将对应标签存入 y_batch。采样后，X_batch 的形状应为                  #
+            # (batch_size, dim)，y_batch 的形状应为 (batch_size,)。                #
             #                                                                       #
-            # 提示： 使用 np.random.choice 到 generate indices. Sampling 使用         #
-            # replacement is 快于 sampling 无放回.              #
+            # 提示：使用 np.random.choice 生成索引。有放回采样比无放回采样更快。   #
             #########################################################################
 
 
@@ -73,7 +71,7 @@ class LinearClassifier(object):
             # 执行参数更新
             #########################################################################
             # TODO:                                                                 #
-            # Update 权重 使用 梯度 并 学习率.          #
+            # 使用梯度和学习率更新权重。                                           #
             #########################################################################
 
 
@@ -84,40 +82,37 @@ class LinearClassifier(object):
 
     def predict(self, X):
         """
-        使用 训练ed 权重 的 这个 linear 分类器 到 predict 标签 for
-        数据 点.
+        使用这个线性分类器训练得到的权重，为数据点预测标签。
 
         输入:
-        - X: A numpy 数组 的 形状 (N, D) containing 训练数据; there are N
-          训练 样本 each 的 维度 D.
+        - X: 形状为 (N, D) 的 numpy 数组，包含 N 个数据样本；
+          每个样本维度为 D。
 
         返回:
-        - y_pred: Predicted 标签 用于 数据 在 X. y_pred is a 1-维度al
-          数组 的 length N, 并 each element is an integer giving 预测的
-          类别.
+        - y_pred: X 中各个数据点的预测标签。y_pred 是长度为 N 的一维数组，
+          每个元素是一个整数，表示预测类别。
         """
         y_pred = np.zeros(X.shape[0])
         ###########################################################################
         # TODO:                                                                   #
-        # Implement 这个 method. 存储 预测的 标签 在 y_pred.            #
+        # 实现这个方法，并将预测标签存入 y_pred。                                #
         ###########################################################################
 
         return y_pred
 
     def loss(self, X_batch, y_batch, reg):
         """
-        计算 损失 函数 并 its derivative.
-        Sub类别 将 在ride 这个.
+        计算损失函数及其导数。子类会覆写这个方法。
 
         输入:
-        - X_batch: A numpy 数组 的 形状 (N, D) containing a minibatch 的 N
-          数据 点; each 点 has 维度 D.
-        - y_batch: A numpy 数组 的 形状 (N,) containing 标签 用于 minibatch.
-        - reg: (float) 正则化 strength.
+        - X_batch: 形状为 (N, D) 的 numpy 数组，包含一个 minibatch；
+          其中有 N 个数据点，每个点维度为 D。
+        - y_batch: 形状为 (N,) 的 numpy 数组，包含该 minibatch 的标签。
+        - reg: (float) 正则化强度。
 
-        返回: A tuple containing:
-        - 损失 as a single float
-        - 梯度 使用 respect 到 self.W; an 数组 的 same 形状 as W
+        返回: 一个 tuple，包含：
+        - 单个 float 形式的损失。
+        - 关于 self.W 的梯度；形状与 W 相同。
         """
         pass
 
@@ -142,14 +137,14 @@ class LinearClassifier(object):
 
 
 class LinearSVM(LinearClassifier):
-    """ 使用 Multi类别 SVM 损失函数的子类 """
+    """使用 Multiclass SVM 损失函数的子类。"""
 
     def loss(self, X_batch, y_batch, reg):
         return svm_loss_vectorized(self.W, X_batch, y_batch, reg)
 
 
 class Softmax(LinearClassifier):
-    """ 使用 Softmax + Cross-entropy 损失函数的子类 """
+    """使用 Softmax + Cross-entropy 损失函数的子类。"""
 
     def loss(self, X_batch, y_batch, reg):
         return softmax_loss_vectorized(self.W, X_batch, y_batch, reg)

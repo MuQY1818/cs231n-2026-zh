@@ -8,9 +8,9 @@ from random import randrange
 
 def eval_numerical_gradient(f, x, verbose=True, h=0.00001):
     """
-    a naive 实现 的 numerical 梯度 的 f at x
-    - f 应为 a 函数 该 takes a single argument
-    - x is 点 (numpy 数组) 到 evaluate 梯度 at
+    在 x 处计算 f 的数值梯度的朴素实现。
+    - f 应该是一个接收单个参数的函数。
+    - x 是要计算梯度的点（numpy 数组）。
     """
 
     fx = f(x)  # 在原始点计算函数值
@@ -39,8 +39,7 @@ def eval_numerical_gradient(f, x, verbose=True, h=0.00001):
 
 def eval_numerical_gradient_array(f, x, df, h=1e-5):
     """
-    Evaluate a numeric 梯度 用于 a 函数 该 accepts a numpy
-    数组 并 returns a numpy 数组.
+    为一个接收 numpy 数组并返回 numpy 数组的函数计算数值梯度。
     """
     grad = np.zeros_like(x)
     it = np.nditer(x, flags=["multi_index"], op_flags=["readwrite"])
@@ -61,20 +60,19 @@ def eval_numerical_gradient_array(f, x, df, h=1e-5):
 
 def eval_numerical_gradient_blobs(f, inputs, output, h=1e-5):
     """
-    计算 numeric 梯度 用于 a 函数 该 operates on 输入
-    and 输出 blobs.
+    为一个作用于输入和输出 blobs 的函数计算数值梯度。
 
-    We assume 该 f accepts several 输入 blobs as arguments, followed by a
-    blob 其中 输出 将 be written. For 样本, f 可能 be 调用 like:
+    假设 f 接收若干输入 blobs 作为参数，最后跟一个用于写入输出的 blob。
+    例如，f 可能这样调用：
 
     f(x, w, out)
 
-    其中 x 并 w are 输入 Blobs, 并 结果 的 f 将 be written 到 out.
+    其中 x 和 w 是输入 blobs，f 的结果会写入 out。
 
     输入:
     - f: 函数
-    - 输入: tuple 的 输入 blobs
-    - 输出: 输出 blob
+    - inputs: 输入 blobs 组成的 tuple
+    - output: 输出 blob
     - h: step size
     """
     numeric_diffs = []
@@ -108,8 +106,7 @@ def eval_numerical_gradient_net(net, inputs, output, h=1e-5):
 
 def grad_check_sparse(f, x, analytic_grad, num_checks=10, h=1e-5):
     """
-    sample a few random elements 并 only return numerical
-    in 这个 维度.
+    随机采样若干元素，只返回这些维度上的数值梯度。
     """
 
     for i in range(num_checks):

@@ -7,12 +7,12 @@ import numpy as np
 
 def visualize_grid(Xs, ubound=255.0, padding=1):
     """
-    reshape a 4D tensor 的 image 数据 到 a grid 用于 easy visualization.
+    将包含图像数据的 4D tensor reshape 成网格，便于可视化。
 
     输入:
-    - Xs: Data 的 形状 (N, H, W, C)
-    - ubound: Output grid 将 have 值 缩放 到 range [0, ubound]
-    - padding: 数量 blank pixels between elements 的 grid
+    - Xs: 数据，形状为 (N, H, W, C)。
+    - ubound: 输出网格的数值会被缩放到 [0, ubound] 范围。
+    - padding: 网格元素之间的空白像素数。
     """
     (N, H, W, C) = Xs.shape
     grid_size = int(ceil(sqrt(N)))

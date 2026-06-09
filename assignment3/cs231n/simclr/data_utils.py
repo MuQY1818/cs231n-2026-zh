@@ -6,8 +6,8 @@ import torch
 
 def compute_train_transform(seed=123456):
     """
-    This 函数 returns a composition 的 数据增强s 到 a single 训练 image.
-    Complete following lines. 提示： look at available 函数 在 torchvision.transforms
+    此函数返回作用于单张训练图像的一组数据增强组合。
+    补全下面的代码。提示：查看 torchvision.transforms 中可用的函数。
     """
     random.seed(seed)
     torch.random.manual_seed(seed)
@@ -19,16 +19,16 @@ def compute_train_transform(seed=123456):
         ##############################################################################
         # TODO：你的代码从这里开始。                                                  #
         #                                                                            #
-        # 提示： Check out transformation 函数 defined 在 torchvision.transforms #
-        # first operation is filled out 用于 you as an 样本.
+        # 提示：查看 torchvision.transforms 中定义的 transformation 函数。      #
+        # 第一个操作已经作为示例为你填好。                                      #
         ##############################################################################
-        # Step 1: Randomly resize 并 crop 到 32x32.
+        # Step 1: 随机 resize 并 crop 到 32x32。
         transforms.RandomResizedCrop(32),
-        # Step 2: Horizont所有y flip image 使用 probability 0.5
+        # Step 2: 以 0.5 的概率水平翻转 image。
 
-        # Step 3: With a probability 的 0.8, apply color jitter (你可以 使用 "color_jitter" defined above.
+        # Step 3: 以 0.8 的概率应用 color jitter（可以使用上面定义的 "color_jitter"）。
 
-        # Step 4: With a probability 的 0.2, convert image 到 灰度
+        # Step 4: 以 0.2 的概率将 image 转换为灰度。
 
         ##############################################################################
         #                               你的代码结束                             #
@@ -58,7 +58,7 @@ class CIFAR10Pair(CIFAR10):
             ##############################################################################
             # TODO：你的代码从这里开始。                                                  #
             #                                                                            #
-            # Apply self.transform 到 image 到 produce x_i 并 x_j 在 paper #
+            # 对 image 应用 self.transform，生成论文中的 x_i 和 x_j。 #
             ##############################################################################
             pass
             ##############################################################################

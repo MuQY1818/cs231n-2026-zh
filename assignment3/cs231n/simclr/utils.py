@@ -7,20 +7,20 @@ from tqdm import tqdm
 from .contrastive_loss import *
 
 def train(model, data_loader, train_optimizer, epoch, epochs, batch_size=32, temperature=0.5, device='cuda'):
-    """Trains 模型 defined 在 ./模型.py 使用 one epoch.
+    """使用一个 epoch 训练 ./model.py 中定义的模型。
     
     输入:
-    - 模型: Model 类别 object as defined 在 ./模型.py.
-    - 数据_loader: torch.utils.数据.DataLoader object; loads 在 训练数据. 你可以 assume loaded 数据 has been augmented.
-    - 训练_optimizer: torch.optim.Optimizer object; applies an optimizer 到 训练.
+    - model: ./model.py 中定义的 Model 类对象。
+    - data_loader: torch.utils.data.DataLoader 对象；加载训练数据。可以假设加载的数据已经增强。
+    - train_optimizer: torch.optim.Optimizer 对象；用于训练的 optimizer。
     - epoch: integer; current epoch number.
-    - epochs: integer; total 数量 epochs.
-    - batch_size: 数量 训练 样本 per batch.
-    - temperature: float; temperature (tau) parameter 使用 在 simclr_损失_vectorized.
-    - device: device name 到 define torch tensors.
+    - epochs: integer; epoch 总数。
+    - batch_size: 每个 batch 的训练样本数量。
+    - temperature: float; simclr_loss_vectorized 中使用的 temperature (tau) 参数。
+    - device: 用于创建 torch tensors 的 device 名称。
 
     返回:
-    - average 损失.
+    - average loss.
     """
     model.train()
     total_loss, total_num, train_bar = 0.0, 0, tqdm(data_loader)
@@ -32,9 +32,9 @@ def train(model, data_loader, train_optimizer, epoch, epochs, batch_size=32, tem
         ##############################################################################
         # TODO：你的代码从这里开始。                                                  #
         #                                                                            #
-        # Take a look at 模型.py file 到 understand 模型's 输入 并 输出.
-        # Run x_i 并 x_j through 模型 到 get out_left, out_right.              #
-        # Then 计算 损失 使用 simclr_损失_vectorized.                        #
+        # 查看 model.py，理解模型的输入和输出。                                #
+        # 将 x_i 和 x_j 输入模型，得到 out_left 和 out_right。                 #
+        # 然后使用 simclr_loss_vectorized 计算损失。                           #
         ##############################################################################
         
         
@@ -87,7 +87,7 @@ def test(model, memory_data_loader, test_data_loader, epoch, epochs, c, temperat
     model.eval()
     total_top1, total_top5, total_num, feature_bank = 0.0, 0.0, 0, []
     with torch.no_grad():
-        # 生成 特征 bank
+        # 生成 feature bank
         for data, _, target in tqdm(memory_data_loader, desc='Feature extracting'):
             feature, out = model(data.to(device))
             feature_bank.append(feature)
@@ -102,7 +102,7 @@ def test(model, memory_data_loader, test_data_loader, epoch, epochs, c, temperat
             feature, out = model(data)
 
             total_num += data.size(0)
-            # 计算 cos similarity between each 特征 vector 并 特征 bank ---> [B, N]
+            # 计算每个 feature vector 与 feature bank 之间的 cos similarity ---> [B, N]
             sim_matrix = torch.mm(feature, feature_bank)
             
             # [B, K]
@@ -115,7 +115,7 @@ def test(model, memory_data_loader, test_data_loader, epoch, epochs, c, temperat
             one_hot_label = torch.zeros(data.size(0) * k, c, device=device)
             # [B*K, C]
             one_hot_label = one_hot_label.scatter(dim=-1, index=sim_labels.view(-1, 1), value=1.0)
-            # weighted score ---> [B, C]
+            # 加权分数 ---> [B, C]
             pred_scores = torch.sum(one_hot_label.view(data.size(0), -1, c) * sim_weight.unsqueeze(dim=-1), dim=1)
 
             pred_labels = pred_scores.argsort(dim=-1, descending=True)

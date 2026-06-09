@@ -16,14 +16,13 @@ Utility functions used for viewing and processing images.
 
 def blur_image(X):
     """
-    A very gentle image blurring operation, 被使用 as a regularizer for
-    image generation.
+    一个非常轻微的图像模糊操作，用作 image generation 的 regularizer。
 
     输入:
-    - X: Image 数据 的 形状 (N, 3, H, W)
+    - X: 图像数据，形状为 (N, 3, H, W)
 
     返回:
-    - X_blur: Blurred version 的 X, 的 形状 (N, 3, H, W)
+    - X_blur: X 的模糊版本，形状为 (N, 3, H, W)
     """
     from .fast_layers import conv_forward_fast
 
@@ -41,15 +40,15 @@ SQUEEZENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 
 def preprocess_image(img):
-    """预处理图像 用于 squeezenet.
+    """为 squeezenet 预处理图像。
 
-    Subtracts pixel 均值 并 divides by 标准差.
+    减去像素均值，并除以标准差。
     """
     return (img.astype(np.float32) / 255.0 - SQUEEZENET_MEAN) / SQUEEZENET_STD
 
 
 def deprocess_image(img, rescale=False):
-    """撤销预处理 on an image 并 convert back 到 uint8."""
+    """撤销图像预处理，并转换回 uint8。"""
     img = img * SQUEEZENET_STD + SQUEEZENET_MEAN
     if rescale:
         vmin, vmax = img.min(), img.max()
@@ -59,8 +58,8 @@ def deprocess_image(img, rescale=False):
 
 def image_from_url(url):
     """
-    Read an image 来自 a URL. 返回 a numpy 数组 使用 pixel 数据.
-    We write image 到 a temporary file 然后 read it back. Kinda gross.
+    从 URL 读取图像，返回包含像素数据的 numpy 数组。我们会先把图像写入临时文件，
+    再读回来。这个做法有点粗糙。
     """
     try:
         f = urllib.request.urlopen(url)
@@ -77,11 +76,11 @@ def image_from_url(url):
 
 
 def load_image(filename, size=None):
-    """从磁盘加载并 resize 图像.
+    """从磁盘加载图像并 resize。
 
     输入:
-    - filename: path 到 file
-    - size: size 的 最短 维度 after rescaling
+    - filename: 文件路径
+    - size: rescale 后最短维度的大小
     """
     img = imread(filename)
     if size is not None:
@@ -89,7 +88,7 @@ def load_image(filename, size=None):
         min_idx = np.argmin(orig_shape)
         scale_factor = float(size) / orig_shape[min_idx]
         new_shape = (orig_shape * scale_factor).astype(int)
-        # TODO: width, height 值 are currently flipped here, 并 we 应该
-        # change resampling method 到 BILINEAR 到 match torch 实现
+        # TODO: 这里 width 和 height 的值目前是反的；还应把 resampling method
+        # 改为 BILINEAR，以匹配 torch 实现。
         img = np.array(Image.fromarray(img).resize(new_shape, resample=Image.NEAREST))
     return img

@@ -1,40 +1,35 @@
 """
-This file implements various first-order update rules 该 are commonly 使用
-用于训练 neural networks. Each update rule accepts current 权重 并 the
-梯度 的 损失 使用 respect 到 those 权重 并 produces next set of
-权重. Each update rule has same interface:
+此文件实现训练 neural networks 常用的各种 first-order update rules。
+每个 update rule 接收当前权重以及损失关于这些权重的梯度，并产生下一组权重。
+每个 update rule 都具有相同接口：
 
 def update(w, dw, config=None):
 
 输入:
-  - w: A numpy 数组 giving current 权重.
-  - dw: A numpy 数组 的 same 形状 as w giving 梯度 的 the
-    损失 使用 respect 到 w.
-  - config: A 字典 containing hyperparameter 值 such as learning
-    rate, momentum, etc. If update rule requires caching 值 在 many
-    iterations, 然后 config 将 also hold 这些 cached 值.
+  - w: numpy 数组，表示当前权重。
+  - dw: 与 w 形状相同的 numpy 数组，表示损失关于 w 的梯度。
+  - config: 字典，包含 learning rate、momentum 等 hyperparameter 值。
+    如果 update rule 需要在多次迭代中缓存值，则 config 也会保存这些缓存值。
 
 返回:
-  - next_w: next 点 after update.
-  - config: config 字典 到 be passed 到 next iteration 的 the
-    update rule.
+  - next_w: update 后的下一个点。
+  - config: 传给下一次 update rule 迭代的 config 字典。
 
-注意： For most update rules, default 学习率 将 probably not
-perform well; however default 值 的 other hyper参数 应该
-work well 用于 a variety 的 different problems.
+注意：对大多数 update rules 来说，默认 learning rate 可能效果不好；
+不过其他 hyperparameters 的默认值应能适用于多种不同问题。
 
-For efficiency, update rules may perform in-place updates, mutating w and
-setting next_w equal 到 w."""
+出于效率考虑，update rules 可能会执行 in-place updates，直接修改 w，
+并令 next_w 等于 w。"""
 
 import numpy as np
 
 
 def sgd(w, dw, config=None):
     """
-    Performs vanilla stochastic 梯度 descent.
+    执行 vanilla stochastic gradient descent。
 
     config format:
-    - learning_rate: Scalar 学习率.
+    - learning_rate: scalar learning rate.
     """
     if config is None:
         config = {}
@@ -46,14 +41,13 @@ def sgd(w, dw, config=None):
 
 def sgd_momentum(w, dw, config=None):
     """
-    Performs stochastic 梯度 descent 使用 momentum.
+    使用 momentum 执行 stochastic gradient descent。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - momentum: Scalar between 0 并 1 giving momentum 值.
-      Setting momentum = 0 reduces 到 sgd.
-    - velocity: A numpy 数组 的 same 形状 as w 并 dw 使用 到 存储 a
-      moving average 的 梯度.
+    - learning_rate: scalar learning rate.
+    - momentum: 介于 0 和 1 之间的 scalar，表示 momentum 值。
+      设置 momentum = 0 会退化为 sgd。
+    - velocity: 与 w 和 dw 形状相同的 numpy 数组，用于存储梯度的 moving average。
     """
     if config is None:
         config = {}
@@ -73,15 +67,14 @@ def sgd_momentum(w, dw, config=None):
 
 def rmsprop(w, dw, config=None):
     """
-    使用s RMSProp update rule, which 使用s a moving average 的 squared
-    梯度 值 到 set adaptive per-parameter 学习率s.
+    使用 RMSProp update rule。它使用 squared gradient 值的 moving average
+    来设置每个参数的自适应 learning rate。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - decay_rate: Scalar between 0 并 1 giving decay rate 用于 squared
-      梯度 cache.
-    - epsilon: Sm所有 scalar 使用 用于 smoothing 到 avoid dividing by zero.
-    - cache: Moving average 的 second moments 的 梯度.
+    - learning_rate: scalar learning rate.
+    - decay_rate: 介于 0 和 1 之间的 scalar，表示 squared gradient cache 的 decay rate。
+    - epsilon: 用于 smoothing 的小 scalar，以避免除以零。
+    - cache: gradient second moments 的 moving average。
     """
     if config is None:
         config = {}
@@ -105,16 +98,16 @@ def rmsprop(w, dw, config=None):
 
 def adam(w, dw, config=None):
     """
-    使用s Adam update rule, which incorporates moving averages 的 both the
-    梯度 并 its square 并 a bias correction term.
+    使用 Adam update rule。它结合 gradient 及其平方的 moving averages，
+    并包含 bias correction 项。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - beta1: Decay rate 用于 moving average 的 first moment 的 梯度.
-    - beta2: Decay rate 用于 moving average 的 second moment 的 梯度.
-    - epsilon: Sm所有 scalar 使用 用于 smoothing 到 avoid dividing by zero.
-    - m: Moving average 的 梯度.
-    - v: Moving average 的 squared 梯度.
+    - learning_rate: scalar learning rate.
+    - beta1: gradient first moment moving average 的 decay rate。
+    - beta2: gradient second moment moving average 的 decay rate。
+    - epsilon: 用于 smoothing 的小 scalar，以避免除以零。
+    - m: gradient 的 moving average。
+    - v: squared gradient 的 moving average。
     - t: Iteration number.
     """
     if config is None:

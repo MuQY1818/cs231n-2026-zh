@@ -5,39 +5,37 @@ from past.builtins import xrange
 
 
 class KNearestNeighbor(object):
-    """ a kNN 分类器 使用 L2 距离 """
+    """使用 L2 距离的 kNN 分类器。"""
 
     def __init__(self):
         pass
 
     def train(self, X, y):
         """
-        Train 分类器. For k-最近邻 这个 is just
-        memorizing 训练数据.
+        训练分类器。对于 k 最近邻来说，训练过程只是记住训练数据。
 
         输入:
-        - X: A numpy 数组 的 形状 (num_训练, D) containing 训练数据
-          consisting 的 num_训练 样本 each 的 维度 D.
-        - y: A numpy 数组 的 形状 (N,) containing 训练 标签, 其中
-             y[i] is 标签 用于 X[i].
+        - X: 形状为 (num_train, D) 的 numpy 数组，包含训练数据；
+          其中有 num_train 个样本，每个样本维度为 D。
+        - y: 形状为 (N,) 的 numpy 数组，包含训练标签；
+          y[i] 是 X[i] 的标签。
         """
         self.X_train = X
         self.y_train = y
 
     def predict(self, X, k=1, num_loops=0):
         """
-        Predict 标签 用于 测试 数据 使用 这个 分类器.
+        使用该分类器预测测试数据的标签。
 
         输入:
-        - X: A numpy 数组 的 形状 (num_测试, D) containing 测试 数据 consisting
-             of num_测试 样本 each 的 维度 D.
-        - k: 数量 最近邻 该 vote 用于 预测的 标签.
-        - num_loops: Determines which 实现 到 使用 到 计算 距离
-          between 训练点 并 测试点.
+        - X: 形状为 (num_test, D) 的 numpy 数组，包含测试数据；
+          其中有 num_test 个样本，每个样本维度为 D。
+        - k: 用于投票预测标签的最近邻数量。
+        - num_loops: 决定用哪一种实现来计算训练点和测试点之间的距离。
 
         返回:
-        - y: A numpy 数组 的 形状 (num_测试,) containing 预测的 标签 用于 the
-          测试 数据, 其中 y[i] is 预测的 标签 用于 测试点 X[i].
+        - y: 形状为 (num_test,) 的 numpy 数组，包含测试数据的预测标签；
+          y[i] 是测试点 X[i] 的预测标签。
         """
         if num_loops == 0:
             dists = self.compute_distances_no_loops(X)
@@ -52,17 +50,14 @@ class KNearestNeighbor(object):
 
     def compute_distances_two_loops(self, X):
         """
-        计算 距离 between each 测试点 在 X 并 each 训练点
-        in self.X_训练 使用 a nested loop 在 both 训练数据 并 the
-        测试 数据.
+        使用双重循环，计算 X 中每个测试点与 self.X_train 中每个训练点的距离。
 
         输入:
-        - X: A numpy 数组 的 形状 (num_测试, D) containing 测试 数据.
+        - X: 形状为 (num_test, D) 的 numpy 数组，包含测试数据。
 
         返回:
-        - dists: A numpy 数组 的 形状 (num_测试, num_训练) 其中 dists[i, j]
-          is Euclidean 距离 between ith 测试点 并 jth 训练
-          点.
+        - dists: 形状为 (num_test, num_train) 的 numpy 数组，
+          其中 dists[i, j] 是第 i 个测试点和第 j 个训练点之间的欧氏距离。
         """
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
@@ -71,19 +66,18 @@ class KNearestNeighbor(object):
             for j in range(num_train):
                 #####################################################################
                 # TODO:                                                             #
-                # 计算 l2 距离 between ith 测试点 并 jth    #
-                # 训练点, 并 存储 结果 在 dists[i, j]. 你应该   #
-                # 不要使用 a loop 在 维度, 也不要使用 np.linalg.norm().          #
+                # 计算第 i 个测试点和第 j 个训练点之间的 L2 距离，                 #
+                # 并将结果存入 dists[i, j]。你不应该在维度上再写循环，             #
+                # 也不能使用 np.linalg.norm()。                                    #
                 #####################################################################
                 pass
         return dists
 
     def compute_distances_one_loop(self, X):
         """
-        计算 距离 between each 测试点 在 X 并 each 训练点
-        in self.X_训练 使用 a single loop 在 测试 数据.
+        使用一个测试数据循环，计算 X 中每个测试点与 self.X_train 中每个训练点的距离。
 
-        输入 / Output: Same as compute_distances_two_loops
+        输入 / 输出: 与 compute_distances_two_loops 相同。
         """
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
@@ -91,73 +85,63 @@ class KNearestNeighbor(object):
         for i in range(num_test):
             #######################################################################
             # TODO:                                                               #
-            # 计算 l2 距离 between ith 测试点 并 所有 训练 #
-            # 点, 并 存储 结果 在 dists[i, :].                        #
-            # 不要 使用 np.linalg.norm().                                        #
+            # 计算第 i 个测试点与所有训练点之间的 L2 距离，                       #
+            # 并将结果存入 dists[i, :]。不要使用 np.linalg.norm()。               #
             #######################################################################
             pass
         return dists
 
     def compute_distances_no_loops(self, X):
         """
-        计算 距离 between each 测试点 在 X 并 each 训练点
-        in self.X_训练 使用 no explicit loops.
+        不使用显式循环，计算 X 中每个测试点与 self.X_train 中每个训练点的距离。
 
-        输入 / Output: Same as compute_distances_two_loops
+        输入 / 输出: 与 compute_distances_two_loops 相同。
         """
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
         dists = np.zeros((num_test, num_train))
         #########################################################################
         # TODO:                                                                 #
-        # 计算 l2 距离 between 所有 测试点 并 所有 训练      #
-        # 点 不使用 使用 any explicit loops, 并 存储 结果 在      #
-        # dists.                                                                #
+        # 不使用任何显式循环，计算所有测试点和所有训练点之间的 L2 距离，         #
+        # 并将结果存入 dists。                                                   #
         #                                                                       #
-        # 你应该 implement 这个 函数 使用 only 基础数组操作; #
-        # in particular 你应该 不要使用 scipy 函数,                #
-        # 也不要使用 np.linalg.norm().                                             #
+        # 你应该只使用基础数组操作来实现这个函数；尤其不能使用 scipy 函数，       #
+        # 也不能使用 np.linalg.norm()。                                           #
         #                                                                       #
-        # 提示： Try 到 formulate l2 距离 使用 矩阵乘法    #
-        #       并 two broadcast 求和.                                         #
+        # 提示：尝试用矩阵乘法和两个 broadcast 求和来表示 L2 距离。              #
         #########################################################################
 
         return dists
 
     def predict_labels(self, dists, k=1):
         """
-        Given a 矩阵 的 距离 between 测试点 并 训练点,
-        predict a 标签 用于 each 测试点.
+        给定测试点和训练点之间的距离矩阵，预测每个测试点的标签。
 
         输入:
-        - dists: A numpy 数组 的 形状 (num_测试, num_训练) 其中 dists[i, j]
-          gives 距离 betwen ith 测试点 并 jth 训练点.
+        - dists: 形状为 (num_test, num_train) 的 numpy 数组，
+          其中 dists[i, j] 表示第 i 个测试点和第 j 个训练点之间的距离。
 
         返回:
-        - y: A numpy 数组 的 形状 (num_测试,) containing 预测的 标签 用于 the
-          测试 数据, 其中 y[i] is 预测的 标签 用于 测试点 X[i].
+        - y: 形状为 (num_test,) 的 numpy 数组，包含测试数据的预测标签；
+          y[i] 是测试点 X[i] 的预测标签。
         """
         num_test = dists.shape[0]
         y_pred = np.zeros(num_test)
         for i in range(num_test):
-            # A list 的 length k storing 标签 的 k 最近邻 to
-            # ith 测试点.
+            # 长度为 k 的列表，用来存储第 i 个测试点的 k 个最近邻标签。
             closest_y = []
             #########################################################################
             # TODO:                                                                 #
-            # 使用 距离矩阵 到 找到 k 最近邻 的 ith    #
-            # 测试点, 并 使用 self.y_训练 到 找到 标签 的 这些       #
-            # 邻居. 将这些标签存储 在 closest_y.                           #
-            # 提示： Look up 函数 numpy.argsort.                             #
+            # 使用距离矩阵找到第 i 个测试点的 k 个最近邻，                         #
+            # 再用 self.y_train 找到这些邻居的标签。将这些标签存入 closest_y。      #
+            # 提示：查阅 numpy.argsort 函数。                                       #
             #########################################################################
 
 
             #########################################################################
             # TODO:                                                                 #
-            # Now 该 you have found 标签 的 k 最近邻, you    #
-            # 需要 到 找到 most common 标签 在 list closest_y 的 标签.   #
-            # 将该标签存储 在 y_pred[i]. Break ties by 选择 更小     #
-            # 标签.                                                                #
+            # 现在你已经找到了 k 个最近邻的标签，需要在 closest_y 中找出最常见的   #
+            # 标签，并将其存入 y_pred[i]。如果出现平票，选择数值更小的标签。       #
             #########################################################################
 
 

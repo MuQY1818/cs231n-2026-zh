@@ -52,7 +52,7 @@ class TextEmbedder:
         text_embedder = ClipEmbed(device="cuda")
         all_texts = list(set(all_texts))
 
-        # encode 所有
+        # 编码所有文本
         idx_mapping = {}
         text_embeddings = []
         for i, text in tqdm(enumerate(all_texts)):
@@ -62,10 +62,10 @@ class TextEmbedder:
 
         # PCA
         data = text_embeddings.float().numpy()
-        mean = np.mean(data, axis=0)  # 计算 均值 vector
+        mean = np.mean(data, axis=0)  # 计算均值 vector
         centered_data = data - mean
         U, S, Vt = np.linalg.svd(centered_data, full_matrices=False)
-        components = Vt  # 存储 所有 components
+        components = Vt  # 存储所有 components
         components = torch.from_numpy(components).float()
         mean = torch.from_numpy(mean).float()
 
@@ -163,15 +163,15 @@ class EmojiDataset(Dataset):
         imgs = self.data[idx]["images"]
         texts = self.data[idx]["texts"]
 
-        # select random image 来自 available images
+        # 从可用 images 中随机选择一张
         img_idx = np.random.choice(len(imgs))
         img = imgs[img_idx]
 
-        # preprocess image
+        # 预处理 image
         img = Image.fromarray(img)
         img = self.transform(img)
 
-        # select random text
+        # 随机选择 text
         text = np.random.choice(texts)
         text_emb = self.text_embedder.embed(text=text, num_pca=self.num_text_emb_pca)
         model_kwargs = {"text_emb": text_emb, "text": text}
@@ -179,7 +179,7 @@ class EmojiDataset(Dataset):
 
     def random_model_kwargs(self, n):
 
-        # return n random 样本
+        # 返回 n 个随机样本
         idxs = np.random.choice(len(self), n)
         samples = [self.__getitem__(idx) for idx in idxs]
         imgs, model_kwargs = torch.utils.data.default_collate(samples)

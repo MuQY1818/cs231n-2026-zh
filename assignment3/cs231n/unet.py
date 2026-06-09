@@ -73,8 +73,8 @@ class Block(nn.Module):
         x = self.proj(x)
         x = self.norm(x)
 
-        # Scale 并 平移 are 使用 到 modulate 输出. This is a variant
-        # of 特征 fusion, more powerful than simply adding 特征 maps.
+        # 使用 scale 和 shift 调制输出。这是特征融合的一种变体，
+        # 比简单相加 feature maps 更强。
         if exists(scale_shift):
             scale, shift = scale_shift
             x = x * (scale + 1) + shift
@@ -131,16 +131,16 @@ class Unet(nn.Module):
         self.init_conv = nn.Conv2d(channels, dim, 3, padding=1)
         self.channels = channels
 
-        # 数量 channels at each 层 i.e. [d1, d2, ..., dn]
+        # 每一层的 channel 数量，即 [d1, d2, ..., dn]
         dims = [dim] + [dim * m for m in dim_mults]
-        # 输入 并 输出 用于 each U-Net block 在 downsampling 层
+        # downsampling 路径中每个 U-Net block 的输入和输出
         # e.g. [(d1, d2), (d2, d3), ..., (dn-1, dn)]
         in_out = list(zip(dims[:-1], dims[1:]))
-        # 输入 并 输出 用于 each U-Net block 在 upsampling 层
+        # upsampling 路径中每个 U-Net block 的输入和输出
         # e.g. [(dn, dn-1), (dn-1, dn-2), ..., (d2, d1)]
         in_out_ups = [(b, a) for a, b in reversed(in_out)]
 
-        # Encoding timestep as context
+        # 将 timestep 编码为 context
         context_dim = dim * 4
         self.time_mlp = nn.Sequential(
             SinusoidalPosEmb(dim),
@@ -149,7 +149,7 @@ class Unet(nn.Module):
             nn.Linear(context_dim, context_dim),
         )
 
-        # Encoding condition (i.e. text embedding) as context
+        # 将 condition（即 text embedding）编码为 context
         self.condition_dim = condition_dim
         self.condition_mlp = nn.Sequential(
             nn.Linear(condition_dim, context_dim),
@@ -157,13 +157,13 @@ class Unet(nn.Module):
             nn.Linear(context_dim, context_dim),
         )
 
-        # Probability 的 dropping condition during 训练
+        # 训练期间丢弃 condition 的概率
         self.uncond_prob = uncond_prob
 
-        # UNet downsampling 并 upsampling blocks.
-        # self.downs is a ModuleList 的 ModuleLists.
+        # UNet downsampling 和 upsampling blocks.
+        # self.downs 是由多个 ModuleList 组成的 ModuleList。
         self.downs = nn.ModuleList([])
-        # self.ups is a ModuleList 的 ModuleLists.
+        # self.ups 是由多个 ModuleList 组成的 ModuleList。
         self.ups = nn.ModuleList([])
 
         ####################################################################
@@ -172,13 +172,12 @@ class Unet(nn.Module):
         for ind, (dim_in, dim_out) in enumerate(in_out):
             down_block = None
             ##################################################################
-            # TODO: Create one UNet downsampling 层 `down_block` as a ModuleList.
-            # It 应为 a ModuleList 的 3 blocks [ResnetBlock, ResnetBlock, 下采样].
-            # Each ResnetBlock operates on dim_in channels 并 输出 dim_in channels.
-            # Make sure 到 pass context_dim 到 each ResnetBlock.
-            # 下采样 block operates on dim_in channels 并 输出 dim_out channels.
-            # Make sure 到 exactly follow 这个 structure 的 ModuleList 在 order to
-            # load a pre训练ed check点.
+            # TODO: 创建一个 UNet downsampling 层 `down_block`，类型为 ModuleList。
+            # 它应是包含 3 个 block 的 ModuleList：[ResnetBlock, ResnetBlock, 下采样]。
+            # 每个 ResnetBlock 接收 dim_in channels 并输出 dim_in channels。
+            # 确保将 context_dim 传给每个 ResnetBlock。
+            # 下采样 block 接收 dim_in channels 并输出 dim_out channels。
+            # 为了加载 pretrained checkpoint，请严格遵循这个 ModuleList 结构。
             ##################################################################
 
             ##################################################################
@@ -192,17 +191,17 @@ class Unet(nn.Module):
         ####################################################################
         # 上采样 block
         ####################################################################
-        # Create upsampling blocks by exactly mirroring downsampling blocks.
-        # self.ups 将 also be a ModuleList 的 ModuleLists.
-        # Each BlockList 将 contain 3 blocks [上采样, ResnetBlock, ResnetBlock].
+        # 通过精确镜像 downsampling blocks 来创建 upsampling blocks。
+        # self.ups 也会是由多个 ModuleList 组成的 ModuleList。
+        # 每个 BlockList 会包含 3 个 block：[上采样, ResnetBlock, ResnetBlock]。
         for ind, (dim_in, dim_out) in enumerate(in_out_ups):
             up_block = None
             ##################################################################
-            # TODO: Create one UNet upsampling 层 as a ModuleList.
-            # It 应为 a ModuleList 的 3 blocks [上采样, ResnetBlock, ResnetBlock].
-            # This 将 mirror corresponding downsampling block.
-            # 不要忘记 到 account 用于 skip connections by having 2 x dim_out
-            # channels at 输入 的 both ResnetBlocks.
+            # TODO: 创建一个 UNet upsampling 层，类型为 ModuleList。
+            # 它应是包含 3 个 block 的 ModuleList：[上采样, ResnetBlock, ResnetBlock]。
+            # 它会镜像对应的 downsampling block。
+            # 不要忘记处理 skip connections：两个 ResnetBlock 的输入通道数
+            # 都应包含 2 x dim_out channels。
             ##################################################################
 
             self.ups.append(up_block)
@@ -212,19 +211,19 @@ class Unet(nn.Module):
         self.final_conv = nn.Conv2d(dim, channels, 1)
 
     def cfg_forward(self, x, time, model_kwargs={}):
-        """Classifier-free guidance 前向传播。模型_kwargs 应包含 `cfg_缩放`。"""
+        """Classifier-free guidance 前向传播。model_kwargs 应包含 `cfg_scale`。"""
 
         cfg_scale = model_kwargs.pop("cfg_scale")
         print("Classifier-free guidance scale:", cfg_scale)
         model_kwargs = copy.deepcopy(model_kwargs)
 
         ##################################################################
-        # TODO：应用 分类器-free guidance 使用 Eq. (6) 来自
+        # TODO：根据以下论文的公式 (6) 应用 classifier-free guidance：
         # https://arxiv.org/pdf/2207.12598 i.e.
-        # x = (缩放 + 1) * eps(x_t, cond) - 缩放 * eps(x_t, empty)
+        # x = (scale + 1) * eps(x_t, cond) - scale * eps(x_t, empty)
         #
-        # You 将 have 到 调用 self.前向 two times.
-        # For unconditional sampling, pass None in`text_emb`.
+        # 你需要调用两次 self.forward。
+        # 对于 unconditional sampling，在 `text_emb` 中传入 None。
         ##################################################################
 
         ##################################################################
@@ -234,13 +233,13 @@ class Unet(nn.Module):
     def forward(self, x, time, model_kwargs={}):
         """通过 U-Net 的前向传播。
         参数:
-            x: 输入 tensor 的 形状 (batch_size, channels, height, width).
-            time: Tensor 的 time steps 的 形状 (batch_size,).
-            模型_kwargs: A 字典 的 additional 模型 输入 including
-                "text_emb" (text embedding) 的 形状 (batch_size, condition_dim).
+            x: 输入 tensor，形状为 (batch_size, channels, height, width).
+            time: time steps tensor，形状为 (batch_size,).
+            model_kwargs: 包含额外模型输入的字典，包括形状为
+                (batch_size, condition_dim) 的 "text_emb"（text embedding）。
 
         返回:
-            x: Output tensor 的 形状 (batch_size, channels, height, width).
+            x: 输出 tensor，形状为 (batch_size, channels, height, width).
         """
 
         if "cfg_scale" in model_kwargs:
@@ -264,22 +263,22 @@ class Unet(nn.Module):
         x = self.init_conv(x)
 
         ##################################################################
-        # TODO：处理 `x` through U-Net conditioned on context.
+        # TODO：在 context 条件下通过 U-Net 处理 `x`。
         #
         # 1. Downsampling:
-        #    - Process `x` through each downsampling block 使用 context.
-        #    - After each ResNet block, save 输出 (特征 maps) 在 a list or dict
-        #      用于 使用 as skip connections 在 upsampling path.
-        #    - Make sure 到 pass context 到 each ResNet block.
+        #    - 使用 context 依次通过每个 downsampling block 处理 `x`。
+        #    - 每个 ResNet block 之后，将输出（feature maps）保存到 list 或 dict，
+        #      以便在 upsampling path 中作为 skip connections 使用。
+        #    - 确保将 context 传入每个 ResNet block。
         #
         # 2. Middle:
-        #    - Process `x` through middle blocks 使用 context.
+        #    - 使用 context 通过 middle blocks 处理 `x`。
         #
         # 3. Upsampling:
-        #    - Process `x` through each upsampling block 使用 context.
-        #    - Before each ResNet block, concatenate 输入 使用 corresponding
-        #      skip connection 来自 downsampling path.
-        #    - Make sure 到 pass context 到 each ResNet block.
+        #    - 使用 context 通过每个 upsampling block 处理 `x`。
+        #    - 在每个 ResNet block 之前，将输入与来自 downsampling path 的
+        #      对应 skip connection 拼接。
+        #    - 确保将 context 传入每个 ResNet block。
         ##################################################################
 
         ##################################################################

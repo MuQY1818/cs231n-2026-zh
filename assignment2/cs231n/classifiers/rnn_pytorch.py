@@ -5,14 +5,13 @@ from ..rnn_layers_pytorch import *
 
 class CaptioningRNN:
     """
-    A CaptioningRNN produces captions 来自 图像特征 使用 a recurrent
-    neural network.
+    CaptioningRNN 使用 recurrent neural network 根据图像特征生成 captions。
 
-    RNN receives 输入 vectors 的 size D, has a vocab size 的 V, works on
-    sequences 的 length T, has an RNN hidden 维度 H, 使用s word vectors
-    of 维度 W, 并 operates on minibatches 的 size N.
+    RNN 接收大小为 D 的输入向量，词表大小为 V，处理长度为 T 的序列；
+    RNN hidden dimension 为 H，word vector dimension 为 W，并在大小为 N 的
+    minibatch 上运行。
 
-    Note 该 we don't 使用 any 正则化 用于 CaptioningRNN.
+    注意，CaptioningRNN 不使用任何 regularization。
     """
 
     def __init__(
@@ -25,17 +24,17 @@ class CaptioningRNN:
         dtype=torch.float32,
     ):
         """
-        Construct a new CaptioningRNN instance.
+        构造一个新的 CaptioningRNN 实例。
 
         输入:
-        - word_to_idx: A 字典 giving vocabulary. It contains V entries,
-          and maps each string 到 a unique integer 在 range [0, V).
-        - 输入_dim: Dimension D 的 输入 image 特征 vectors.
-        - wordvec_dim: Dimension W 的 word vectors.
-        - hidden_dim: Dimension H 用于 hidden state 的 RNN.
-        - cell_type: What type 的 RNN 到 使用; either 'rnn' or 'lstm'.
-        - dtype: numpy 数据type 到 使用; 使用 float32 用于训练 并 float64 for
-          numeric 梯度 checking.
+        - word_to_idx: 表示词表的字典，包含 V 个条目，将每个字符串映射到
+          [0, V) 范围内的唯一整数。
+        - input_dim: 输入图像特征向量的维度 D。
+        - wordvec_dim: word vector 的维度 W。
+        - hidden_dim: RNN hidden state 的维度 H。
+        - cell_type: 使用的 RNN 类型，可以是 'rnn' 或 'lstm'。
+        - dtype: 使用的 numpy datatype；训练时使用 float32，numerical
+          gradient check 时使用 float64。
         """
         if cell_type not in {"rnn", "lstm"}:
             raise ValueError('Invalid cell_type "%s"' % cell_type)
@@ -69,7 +68,7 @@ class CaptioningRNN:
         self.params["Wh"] /= np.sqrt(hidden_dim)
         self.params["b"] = torch.zeros(dim_mul * hidden_dim)
 
-        # 初始化 hidden 到词表输出的权重
+        # 初始化 hidden-to-vocab 输出权重
         self.params["W_vocab"] = torch.randn(hidden_dim, vocab_size)
         self.params["W_vocab"] /= np.sqrt(hidden_dim)
         self.params["b_vocab"] = torch.zeros(vocab_size)
@@ -80,66 +79,61 @@ class CaptioningRNN:
 
     def loss(self, features, captions):
         """
-        计算 训练时 损失 用于 RNN. We 输入 图像特征 and
-        ground-truth captions 用于 those images, 并 使用 an RNN (or LSTM) 到 计算
-        损失 并 梯度 on 所有 参数.
+        计算 RNN 的 training-time loss。输入图像特征及其 ground-truth
+        captions，使用 RNN（或 LSTM）计算所有参数上的 loss。
 
         输入:
-        - 特征: 输入 图像特征, 的 形状 (N, D)
-        - captions: Ground-truth captions; an integer 数组 的 形状 (N, T + 1) 其中
-          each element is 在 range 0 <= y[i, t] < V
+        - features: 输入图像特征，形状为 (N, D)
+        - captions: ground-truth captions；整数数组，形状为 (N, T + 1)，
+          其中每个元素都在 0 <= y[i, t] < V 范围内
 
-        返回 a tuple of:
-        - 损失: Scalar 损失
+        返回:
+        - loss: 标量 loss
         """
-        # Cut captions 到 two pieces: captions_in has everything but last word
-        # and 将 be 输入 到 RNN; captions_out has everything but first
-        # word 并 这个 is what 我们将 expect RNN 到 generate. These are offset
-        # by one relative 到 each other beca使用 RNN 应该 produce word (t+1)
-        # after receiving word t. first element 的 captions_in 将 be START
-        # token, 并 first element 的 captions_out 将 be first word.
+        # 将 captions 切成两段：captions_in 包含除最后一个词外的所有词，会作为
+        # RNN 的输入；captions_out 包含除第一个词外的所有词，是期望 RNN 生成的
+        # 输出。两者相差一个时间步，因为 RNN 在接收词 t 后应生成词 (t+1)。
+        # captions_in 的第一个元素是 START token，captions_out 的第一个元素是
+        # 第一个真实词。
         captions_in = captions[:, :-1]
         captions_out = captions[:, 1:]
 
-        # You'll 需要 这个
+        # 你会用到这个 mask
         mask = captions_out != self._null
 
-        # Weight 并 bias 用于 affine transform 来自 图像特征 到 initial
-        # hidden state
+        # 从图像特征到 initial hidden state 的 affine transform 的权重和偏置
         W_proj, b_proj = self.params["W_proj"], self.params["b_proj"]
 
         # Word embedding 矩阵
         W_embed = self.params["W_embed"]
 
-        # 输入-to-hidden, hidden-to-hidden, 并 偏置 用于 RNN
+        # RNN 的 input-to-hidden、hidden-to-hidden 权重和偏置
         Wx, Wh, b = self.params["Wx"], self.params["Wh"], self.params["b"]
 
-        # Weight 并 bias 用于 hidden-to-vocab transformation.
+        # hidden-to-vocab transformation 的权重和偏置
         W_vocab, b_vocab = self.params["W_vocab"], self.params["b_vocab"]
 
         loss = 0.0
         ############################################################################
-        # TODO：实现 前向传播 用于 CaptioningRNN.                  #
-        # In 前向传播 你需要 到 do following:                   #
-        # (1) 使用 an affine transformation 到 计算 initial hidden state     #
-        #     来自 图像特征. This 应该 produce an 数组 的 形状 (N, H)#
-        # (2) 使用 a word embedding 层 到 transform words 在 captions_in     #
-        #     来自 indices 到 vectors, giving an 数组 的 形状 (N, T, W).         #
-        # (3) 使用 either a vanilla RNN or LSTM (depending on self.cell_type) 到    #
-        #     process sequence 的 输入 word vectors 并 produce hidden state  #
-        #     vectors 用于 所有 timesteps, producing an 数组 的 形状 (N, T, H).    #
-        # (4) 使用 a (temporal) affine transformation 到 计算 分数 在    #
-        #     vocabulary at every timestep 使用 hidden states, giving an      #
-        #     数组 的 形状 (N, T, V).                                            #
-        # (5) 使用 (temporal) softmax 到 计算 损失 使用 captions_out, ignoring  #
-        #     点 其中 输出 word is <NULL> 使用 mask above.     #
+        # TODO：实现 CaptioningRNN 的 forward pass。                           #
+        # 在 forward pass 中需要完成以下步骤：                                  #
+        # (1) 对图像特征使用 affine transformation，计算 initial hidden state。  #
+        #     这应产生一个形状为 (N, H) 的数组。                                #
+        # (2) 使用 word embedding layer 将 captions_in 中的 word index 转换为    #
+        #     vector，得到形状为 (N, T, W) 的数组。                              #
+        # (3) 根据 self.cell_type 使用 vanilla RNN 或 LSTM 处理输入 word vector  #
+        #     序列，并为所有 timestep 生成 hidden state vector，得到形状为       #
+        #     (N, T, H) 的数组。                                                #
+        # (4) 使用 (temporal) affine transformation 基于 hidden states 计算每个   #
+        #     timestep 上词表中所有词的分数，得到形状为 (N, T, V) 的数组。       #
+        # (5) 使用 (temporal) softmax 根据 captions_out 计算 loss，并通过上面的   #
+        #     mask 忽略输出词为 <NULL> 的位置。                                  #
         #                                                                          #       
-        # Please ensure 该 your 实现 is agnostic 的 输入 tensors  #
-        # 数据类型.                                                              #
+        # 请确保你的实现不依赖输入 tensor 的具体数据类型。                       #
         #                                                                          #
-        # 不要 worry about regularizing 权重 or their 梯度!          #
+        # 不需要考虑对权重或其梯度做 regularization！                            #
         #                                                                          #
-        # You also don't have 到 implement 反向传播.                      #
+        # 也不需要实现 backward pass。                                           #
         ############################################################################
 
         ############################################################################
@@ -150,27 +144,24 @@ class CaptioningRNN:
 
     def sample(self, features, max_length=30):
         """
-        Run a 测试时 前向传播 用于 模型, sampling captions 用于 输入
-        特征 vectors.
+        运行模型的 test-time forward pass，为输入特征向量采样 captions。
 
-        At each timestep, we embed current word, pass it 并 previous hidden
-        state 到 RNN 到 get next hidden state, 使用 hidden state 到 get
-        分数 用于 所有 vocab words, 并 choose word 使用 highest score as
-        next word. initial hidden state is 计算得到的 by applying an affine
-        transform 到 输入 图像特征, 并 initial word is <START>
-        token.
+        在每个 timestep，我们对当前词做 embedding，将它和 previous hidden
+        state 传给 RNN 以获得 next hidden state，再用 hidden state 得到所有
+        vocab word 的分数，并选择分数最高的词作为 next word。initial hidden
+        state 由输入图像特征经过 affine transform 得到，initial word 为
+        <START> token。
 
-        For LSTMs you 将 also have 到 keep track 的 cell state; 在 该 case
-        initial cell state 应为 zero.
+        对于 LSTM，还需要维护 cell state；此时 initial cell state 应该为 0。
 
         输入:
-        - 特征: Array 的 输入 图像特征 的 形状 (N, D).
-        - max_length: Maximum length T 的 generated captions.
+        - features: 输入图像特征数组，形状为 (N, D)。
+        - max_length: 生成 captions 的最大长度 T。
 
         返回:
-        - captions: Array 的 形状 (N, max_length) giving sampled captions,
-          其中 each element is an integer 在 range [0, V). first element
-          of captions 应为 first sampled word, not <START> token.
+        - captions: 形状为 (N, max_length) 的数组，给出采样得到的 captions，
+          其中每个元素都是 [0, V) 范围内的整数。captions 的第一个元素应该为
+          第一个采样词，而不是 <START> token。
         """
         N = features.shape[0]
         captions = self._null * torch.ones((N, max_length), dtype=torch.long)
@@ -182,28 +173,25 @@ class CaptioningRNN:
         W_vocab, b_vocab = self.params["W_vocab"], self.params["b_vocab"]
 
         ###########################################################################
-        # TODO：实现 测试时 sampling 用于 模型. 你需要 到      #
-        # 初始化 hidden state 的 RNN by applying learned affine   #
-        # transform 到 输入 图像特征. first word 该 you feed 到  #
-        # RNN 应为 <START> token; its 值 is 存储 在         #
-        # 变量 self._start. At each timestep 你需要 到 do to:          #
-        # (1) Embed previous word 使用 learned word embeddings           #
-        # (2) Make an RNN step 使用 previous hidden state 并 embedded   #
-        #     current word 到 get next hidden state.                          #
-        # (3) Apply learned affine transformation 到 next hidden state 到 #
-        #     get 分数 用于 所有 words 在 vocabulary                          #
-        # (4) Select word 使用 highest score as next word, writing it #
-        #     (word index) 到 appropriate slot 在 captions 变量   #
+        # TODO：实现模型的 test-time sampling。需要将输入图像特征经过学到的    #
+        # affine transform，初始化 RNN 的 hidden state。传给 RNN 的第一个词    #
+        # 应该为 <START> token，其值存储在变量 self._start 中。每个 timestep   #
+        # 需要执行以下步骤：                                                   #
+        # (1) 使用学到的 word embeddings 对 previous word 做 embedding。        #
+        # (2) 使用 previous hidden state 和 embedded current word 执行一个      #
+        #     RNN step，得到 next hidden state。                               #
+        # (3) 对 next hidden state 应用学到的 affine transformation，得到词表   #
+        #     中所有词的分数。                                                 #
+        # (4) 选择分数最高的词作为 next word，并把它（word index）写入          #
+        #     captions 变量中的相应位置。                                      #
         #                                                                         #
-        # 为简单起见, you 不要 需要 到 stop generating after an <END> token #
-        # is sampled, but 你可以 if you want to.                                 #
+        # 为简单起见，采样到 <END> token 后不需要停止生成；如果愿意，也可以停止。#
         #                                                                         #
-        # 提示： You 将 not be able 到 使用 rnn_前向 or lstm_前向       #
-        # 函数; you'll 需要 到 调用 rnn_step_前向 or lstm_step_前向 在 #
-        # a loop.                                                                 #
+        # 提示：不能使用 rnn_forward 或 lstm_forward 函数；需要在循环中调用      #
+        # rnn_step_forward 或 lstm_step_forward。                                #
         #                                                                         #
-        # 注意： we are still working 在 minibatches 在 这个 函数. Also if   #
-        # you are 使用 an LSTM, 初始化 first cell state 到 zeros.        #
+        # 注意：这个函数中仍然是在 minibatch 上工作。如果使用 LSTM，需要把       #
+        # 第一个 cell state 初始化为 0。                                         #
         ###########################################################################
 
         ############################################################################

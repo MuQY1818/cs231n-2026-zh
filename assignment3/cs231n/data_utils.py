@@ -15,7 +15,7 @@ def load_pickle(f):
 
 
 def load_CIFAR_batch(filename):
-    """ load single batch 的 cifar """
+    """加载 CIFAR 的单个 batch。"""
     with open(filename, "rb") as f:
         datadict = load_pickle(f)
         X = datadict["data"]
@@ -26,7 +26,7 @@ def load_CIFAR_batch(filename):
 
 
 def load_CIFAR10(ROOT):
-    """ load 所有 的 cifar """
+    """加载完整 CIFAR 数据集。"""
     xs = []
     ys = []
     for b in range(1, 6):
@@ -45,9 +45,8 @@ def get_CIFAR10_data(
     num_training=49000, num_validation=1000, num_test=1000, subtract_mean=True
 ):
     """
-    Load CIFAR-10 数据集 来自 disk 并 perform preprocessing 到 prepare
-    it 用于 分类器s. These are same steps as 我们使用 用于 SVM, but
-    condensed 到 a single 函数.
+    从磁盘加载 CIFAR-10 数据集并执行预处理，以便用于分类器。
+    这些步骤与 SVM 中使用的步骤相同，但被整合进一个函数。
     """
     # 加载原始 CIFAR-10 数据
     cifar10_dir = os.path.join(
@@ -91,48 +90,47 @@ def get_CIFAR10_data(
 
 def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
     """
-    Load TinyImageNet. Each 的 TinyImageNet-100-A, TinyImageNet-100-B, and
-    TinyImageNet-200 have same directory structure, so 这个 可以 be 使用
-    to load any 的 them.
+    加载 TinyImageNet。TinyImageNet-100-A、TinyImageNet-100-B 和
+    TinyImageNet-200 具有相同目录结构，因此这个函数可以加载其中任意一个。
 
     输入:
-    - path: String giving path 到 directory 到 load.
-    - dtype: numpy 数据type 使用 到 load 数据.
-    - subtract_均值: Whether 到 subtract 均值 训练 image.
+    - path: 待加载目录的路径字符串。
+    - dtype: 加载数据时使用的 numpy dtype。
+    - subtract_mean: 是否减去训练图像均值。
 
-    返回: A 字典 使用 following entries:
-    - 类别_names: A list 其中 类别_names[i] is a list 的 strings giving the
-      WordNet names 用于 类别 i 在 loaded 数据集.
-    - X_训练: (N_tr, 3, 64, 64) 数组 的 训练 images
-    - y_训练: (N_tr,) 数组 的 训练 标签
-    - X_val: (N_val, 3, 64, 64) 数组 的 验证 images
-    - y_val: (N_val,) 数组 的 验证 标签
-    - X_测试: (N_测试, 3, 64, 64) 数组 的 测试 images.
-    - y_测试: (N_测试,) 数组 的 测试 标签; if 测试 标签 are not available
-      (such as 在 student code) 然后 y_测试 将 be None.
-    - 均值_image: (3, 64, 64) 数组 giving 均值 训练 image
+    返回: 包含以下条目的字典：
+    - class_names: 一个 list，其中 class_names[i] 是字符串列表，给出已加载数据集中
+      类别 i 的 WordNet 名称。
+    - X_train: (N_tr, 3, 64, 64) 数组，训练 images。
+    - y_train: (N_tr,) 数组，训练 labels。
+    - X_val: (N_val, 3, 64, 64) 数组，验证 images。
+    - y_val: (N_val,) 数组，验证 labels。
+    - X_test: (N_test, 3, 64, 64) 数组，测试 images。
+    - y_test: (N_test,) 数组，测试 labels；如果测试 labels 不可用
+      （例如 student code 中），则 y_test 为 None。
+    - mean_image: (3, 64, 64) 数组，训练 image 均值。
     """
-    # First load wnids
+    # 首先加载 wnids
     with open(os.path.join(path, "wnids.txt"), "r") as f:
         wnids = [x.strip() for x in f]
 
-    # Map wnids 到 integer 标签
+    # 将 wnids 映射到整数标签
     wnid_to_label = {wnid: i for i, wnid in enumerate(wnids)}
 
-    # 使用 words.txt 到 get names 用于 each 类别
+    # 使用 words.txt 获取每个类别的名称
     with open(os.path.join(path, "words.txt"), "r") as f:
         wnid_to_words = dict(line.split("\t") for line in f)
         for wnid, words in wnid_to_words.items():
             wnid_to_words[wnid] = [w.strip() for w in words.split(",")]
     class_names = [wnid_to_words[wnid] for wnid in wnids]
 
-    # Next load 训练数据.
+    # 接着加载训练数据
     X_train = []
     y_train = []
     for i, wnid in enumerate(wnids):
         if (i + 1) % 20 == 0:
             print("loading training data for synset %d / %d" % (i + 1, len(wnids)))
-        # To figure out filenames 我们需要 到 open boxes file
+        # 为了确定文件名，需要打开 boxes file。
         boxes_file = os.path.join(path, "train", wnid, "%s_boxes.txt" % wnid)
         with open(boxes_file, "r") as f:
             filenames = [x.split("\t")[0] for x in f]
@@ -150,11 +148,11 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
         X_train.append(X_train_block)
         y_train.append(y_train_block)
 
-    # 我们需要 到 concatenate 所有 训练数据
+    # 需要拼接所有训练数据
     X_train = np.concatenate(X_train, axis=0)
     y_train = np.concatenate(y_train, axis=0)
 
-    # Next load 验证 数据
+    # 接着加载验证数据
     with open(os.path.join(path, "val", "val_annotations.txt"), "r") as f:
         img_files = []
         val_wnids = []
@@ -172,9 +170,8 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
                 img.shape = (64, 64, 1)
             X_val[i] = img.transpose(2, 0, 1)
 
-    # Next load 测试 images
-    # Students won't have 测试 标签, so 我们需要 到 iterate 在 files 在 the
-    # images directory.
+    # 接着加载测试 images。
+    # 学生没有测试 labels，因此需要遍历 images directory 中的文件。
     img_files = os.listdir(os.path.join(path, "test", "images"))
     X_test = np.zeros((len(img_files), 3, 64, 64), dtype=dtype)
     for i, img_file in enumerate(img_files):
@@ -216,16 +213,15 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
 
 def load_models(models_dir):
     """
-    Load saved 模型 来自 disk. This 将 attempt 到 unpickle 所有 files 在 a
-    directory; any files 该 give errors on unpickling (such as README.txt)
-    将 be skipped.
+    从磁盘加载保存的模型。函数会尝试 unpickle 目录中的所有文件；
+    任何 unpickle 出错的文件（例如 README.txt）都会被跳过。
 
     输入:
-    - 模型_dir: String giving path 到 a directory containing 模型 files.
-      Each 模型 file is a pickled 字典 使用 a '模型' field.
+    - models_dir: 包含模型文件的目录路径字符串。
+      每个模型文件都是一个带有 'model' 字段的 pickled 字典。
 
     返回:
-    A 字典 mapping 模型 file names 到 模型.
+    一个字典，将模型文件名映射到模型。
     """
     models = {}
     for model_file in os.listdir(models_dir):
@@ -238,15 +234,15 @@ def load_models(models_dir):
 
 
 def load_imagenet_val(num=None):
-    """Load a handful 的 验证 images 来自 ImageNet.
+    """从 ImageNet 加载少量验证 images。
 
     输入:
-    - num: 数量 images 到 load (max 的 25)
+    - num: 要加载的 image 数量，最大为 25。
 
     返回:
-    - X: numpy 数组 使用 形状 [num, 224, 224, 3]
-    - y: numpy 数组 的 integer image 标签, 形状 [num]
-    - 类别_names: dict mapping integer 标签 到 类别 name
+    - X: 形状为 [num, 224, 224, 3] 的 numpy 数组。
+    - y: 形状为 [num] 的 numpy 数组，包含整数 image labels。
+    - class_names: 将整数 label 映射到类别名称的 dict。
     """
     imagenet_fn = os.path.join(
         os.path.dirname(__file__), "datasets/imagenet_val_25.npz"
@@ -258,8 +254,8 @@ def load_imagenet_val(num=None):
         print("bash get_imagenet_val.sh")
         assert False, "Need to download imagenet_val_25.npz"
 
-    # modify default 参数 的 np.load
-    # https://stackoverflow.com/questions/55890813/how-to-fix-object-数组-可以not-be-loaded-when-允许-pickle-false-for-imdb-loa
+    # 修改 np.load 的默认参数。
+    # 参考：https://stackoverflow.com/questions/55890813/
     np_load_old = np.load
     np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
     f = np.load(imagenet_fn)

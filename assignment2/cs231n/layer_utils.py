@@ -4,15 +4,15 @@ from .fast_layers import *
 
 def affine_relu_forward(x, w, b):
     """
-    Convenience 层 该 perorms an affine transform followed by a ReLU
+    一个 convenience layer，执行 affine transform 后接 ReLU。
 
     输入:
-    - x: 输入 到 affine 层
-    - w, b: Weights 用于 affine 层
+    - x: affine layer 的输入
+    - w, b: affine layer 的权重
 
-    返回 a tuple of:
-    - out: Output 来自 ReLU
-    - cache: Object 到 give 到 反向传播
+    返回一个 tuple:
+    - out: ReLU 的输出
+    - cache: 传给 backward pass 的对象
     """
     a, fc_cache = affine_forward(x, w, b)
     out, relu_cache = relu_forward(a)
@@ -21,7 +21,7 @@ def affine_relu_forward(x, w, b):
 
 def affine_relu_backward(dout, cache):
     """
-    反向传播 用于 affine-relu convenience 层
+    affine-relu convenience layer 的 backward pass。
     """
     fc_cache, relu_cache = cache
     da = relu_backward(dout, relu_cache)
@@ -31,15 +31,15 @@ def affine_relu_backward(dout, cache):
 
 def conv_relu_forward(x, w, b, conv_param):
     """
-    A convenience 层 该 performs a convolution followed by a ReLU.
+    一个 convenience layer，执行 convolution 后接 ReLU。
 
     输入:
-    - x: 输入 到 convolutional 层
-    - w, b, conv_param: Weights 并 参数 用于 convolutional 层
+    - x: convolutional layer 的输入
+    - w, b, conv_param: convolutional layer 的权重和参数
 
-    返回 a tuple of:
-    - out: Output 来自 ReLU
-    - cache: Object 到 give 到 反向传播
+    返回一个 tuple:
+    - out: ReLU 的输出
+    - cache: 传给 backward pass 的对象
     """
     a, conv_cache = conv_forward_fast(x, w, b, conv_param)
     out, relu_cache = relu_forward(a)
@@ -49,7 +49,7 @@ def conv_relu_forward(x, w, b, conv_param):
 
 def conv_relu_backward(dout, cache):
     """
-    反向传播 用于 conv-relu convenience 层.
+    conv-relu convenience layer 的 backward pass。
     """
     conv_cache, relu_cache = cache
     da = relu_backward(dout, relu_cache)
@@ -75,16 +75,16 @@ def conv_bn_relu_backward(dout, cache):
 
 def conv_relu_pool_forward(x, w, b, conv_param, pool_param):
     """
-    Convenience 层 该 performs a convolution, a ReLU, 并 a pool.
+    一个 convenience layer，执行 convolution、ReLU 和 pool。
 
     输入:
-    - x: 输入 到 convolutional 层
-    - w, b, conv_param: Weights 并 参数 用于 convolutional 层
-    - pool_param: Parameters 用于 pooling 层
+    - x: convolutional layer 的输入
+    - w, b, conv_param: convolutional layer 的权重和参数
+    - pool_param: pooling layer 的参数
 
-    返回 a tuple of:
-    - out: Output 来自 pooling 层
-    - cache: Object 到 give 到 反向传播
+    返回一个 tuple:
+    - out: pooling layer 的输出
+    - cache: 传给 backward pass 的对象
     """
     a, conv_cache = conv_forward_fast(x, w, b, conv_param)
     s, relu_cache = relu_forward(a)
@@ -95,7 +95,7 @@ def conv_relu_pool_forward(x, w, b, conv_param, pool_param):
 
 def conv_relu_pool_backward(dout, cache):
     """
-    反向传播 用于 conv-relu-pool convenience 层
+    conv-relu-pool convenience layer 的 backward pass。
     """
     conv_cache, relu_cache, pool_cache = cache
     ds = max_pool_backward_fast(dout, pool_cache)

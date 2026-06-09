@@ -10,27 +10,24 @@ from scipy.ndimage import uniform_filter
 
 def extract_features(imgs, feature_fns, verbose=False):
     """
-    Given pixel 数据 用于 images 并 several 特征 函数 该 可以 operate on
-    single images, apply 所有 特征 函数 到 所有 images, concatenating the
-    特征 vectors 用于 each image 并 storing 特征 用于 所有 images in
-    a single 矩阵.
+    给定图像像素数据和若干可作用于单张图像的特征函数，
+    将所有特征函数应用到所有图像上，拼接每张图像的特征向量，
+    并把所有图像的特征存储在一个矩阵中。
 
     输入:
-    - imgs: N x H X W X C 数组 的 pixel 数据 用于 N images.
-    - 特征_fns: List 的 k 特征 函数. ith 特征 函数 应该
-      take as 输入 an H x W x D 数组 并 return a (one-维度al) 数组 of
-      length F_i.
-    - verbose: Boolean; if true, print progress.
+    - imgs: N x H x W x C 数组，表示 N 张图像的像素数据。
+    - feature_fns: k 个特征函数组成的列表。第 i 个特征函数应接收
+      H x W x D 数组作为输入，并返回长度为 F_i 的一维数组。
+    - verbose: 布尔值；若为 true，则打印进度。
 
     返回:
-    An 数组 的 形状 (N, F_1 + ... + F_k) 其中 each column is concatenation
-    of 所有 特征 用于 a single image.
+    形状为 (N, F_1 + ... + F_k) 的数组，其中每一行是单张图像所有特征的拼接。
     """
     num_images = imgs.shape[0]
     if num_images == 0:
         return np.array([])
 
-    # 使用 first image 到 determine 特征维度
+    # 使用第一张图像确定特征维度。
     feature_dims = []
     first_image_features = []
     for feature_fn in feature_fns:
@@ -39,13 +36,12 @@ def extract_features(imgs, feature_fns, verbose=False):
         feature_dims.append(feats.size)
         first_image_features.append(feats)
 
-    # Now 该 we know 维度 的 特征, we 可以 分配 a single
-    # big 数组 到 存储 所有 特征 as columns.
+    # 现在已知特征维度，可以分配一个大数组来存储所有特征。
     total_feature_dim = sum(feature_dims)
     imgs_features = np.zeros((num_images, total_feature_dim))
     imgs_features[0] = np.hstack(first_image_features).T
 
-    # Extract 特征 用于 rest 的 images.
+    # 提取其余图像的特征。
     for i in range(1, num_images):
         idx = 0
         for feature_fn, feature_dim in zip(feature_fns, feature_dims):
@@ -61,11 +57,11 @@ def extract_features(imgs, feature_fns, verbose=False):
 def rgb2gray(rgb):
     """将 RGB 图像转换为灰度图像
 
-      Parameters:
-        rgb : RGB image
+      参数:
+        rgb : RGB 图像
 
       返回:
-        gray : 灰度 image
+        gray : 灰度图像
 
     """
     return np.dot(rgb[..., :3], [0.299, 0.587, 0.144])
@@ -74,18 +70,18 @@ def rgb2gray(rgb):
 def hog_feature(im):
     """计算图像的方向梯度直方图（HOG）特征
 
-         Modified 来自 skimage.特征.hog
+         修改自 skimage.feature.hog
          http://pydoc.net/Python/scikits-image/0.4.2/skimage.特征.hog
 
-       Reference:
-         Histograms 的 Oriented Gradients 用于 Human Detection
-         Navneet Dalal 并 Bill Triggs, CVPR 2005
+       参考:
+         Histograms of Oriented Gradients for Human Detection
+         Navneet Dalal and Bill Triggs, CVPR 2005
 
-      Parameters:
-        im : an 输入 灰度 or rgb image
+      参数:
+        im : 输入灰度图或 RGB 图像
 
       返回:
-        feat: Histogram 的 Gradient (HOG) 特征
+        feat: HOG 特征
 
     """
 
@@ -127,18 +123,17 @@ def hog_feature(im):
 
 def color_histogram_hsv(im, nbin=10, xmin=0, xmax=255, normalized=True):
     """
-    计算 color histogram 用于 an image 使用 hue.
+    使用 hue 计算图像的颜色直方图。
 
     输入:
-    - im: H x W x C 数组 的 pixel 数据 用于 an RGB image.
-    - nbin: 数量 histogram bins. (default: 10)
-    - xmin: Minimum pixel 值 (default: 0)
-    - xmax: Maximum pixel 值 (default: 255)
-    - 归一化后的: Whether 到 normalize histogram (default: True)
+    - im: H x W x C 数组，表示 RGB 图像的像素数据。
+    - nbin: histogram bin 数量（默认 10）。
+    - xmin: 最小像素值（默认 0）。
+    - xmax: 最大像素值（默认 255）。
+    - normalized: 是否归一化 histogram（默认 True）。
 
     返回:
-      1D vector 的 length nbin giving color histogram 在 hue 的 the
-      输入 image.
+      长度为 nbin 的一维向量，表示输入图像 hue 通道上的颜色直方图。
     """
     ndim = im.ndim
     bins = np.linspace(xmin, xmax, nbin + 1)
@@ -151,20 +146,19 @@ def color_histogram_hsv(im, nbin=10, xmin=0, xmax=255, normalized=True):
 
 
 # ~~START DELETE~~
-# These are some other 特征 该 we implemented 到 play 约为, but 不是
-# distributing 到 students.
+# 下面是一些我们实现来做实验的其他特征，但不会分发给学生。
 def color_histogram(im, nbin=10, xmin=0, xmax=255, normalized=True):
     """计算图像的颜色直方图特征
 
-      Parameters:
-        im : a numpy 数组 的 灰度 or rgb image
-        nbin : 数量 histogram bins (default: 10)
-        xmin : minimum pixel 值 (default: 0)
-        xmax : maximum pixel 值 (deafult: 255)
-        归一化后的 : bool flag 到 normalize histogram
+      参数:
+        im : 灰度或 RGB 图像的 numpy 数组
+        nbin : histogram bin 数量（默认 10）
+        xmin : 最小像素值（默认 0）
+        xmax : 最大像素值（默认 255）
+        normalized : 是否归一化 histogram 的布尔标志
 
       返回:
-        feat : color histogram 特征
+        feat : 颜色直方图特征
 
     """
     ndim = im.ndim
@@ -191,7 +185,7 @@ def color_histogram(im, nbin=10, xmin=0, xmax=255, normalized=True):
 
 def color_histogram_spatial(img, levels=3, nbin=4):
     """
-    Color histogram 在 a pyramid.
+    金字塔上的颜色直方图。
     """
     feats = []
 
@@ -207,7 +201,7 @@ def color_histogram_spatial(img, levels=3, nbin=4):
 
 def color_histogram_cross(img, nbin=5, normalized=True):
     """
-    RGB color histogram 其中 our bins are 3 维度al.
+    RGB 颜色直方图，其中 bin 是三维的。
     """
     height, width, channels = img.shape
     new_size = (height * width, channels)

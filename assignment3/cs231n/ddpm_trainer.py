@@ -41,7 +41,7 @@ class Trainer(object):
         self.batch_size = train_batch_size
         self.train_num_steps = train_num_steps
 
-        # 数据集 并 DataLoader
+        # 数据集和 DataLoader
         self.ds = dataset
         dl = DataLoader(
             self.ds,
@@ -87,7 +87,7 @@ class Trainer(object):
         self.step = data["step"]
         self.opt.load_state_dict(data["opt"])
 
-        # Move 模型 并 optimizer 到 same device
+        # 将模型和 optimizer 移动到同一 device。
         device = self.device
         self.diffusion_model.to(device)
         for state in self.opt.state.values():

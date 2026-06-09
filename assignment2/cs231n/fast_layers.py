@@ -6,23 +6,22 @@ try:
     from .im2col_cython import col2im_6d_cython
 except ImportError:
     pass
-    # print("""=========== 你可以 safely ignore message below if you are NOT working on ConvolutionalNetworks.ipynb ===========""")
-    # print("\t你需要 到 compile a Cython extension 用于 a portion 的 这个 assignment.")
-    # print("\tinstructions 到 do 这个 将 be given 在 a section 的 notebook below.")
+    # print("""=========== 如果你不在做 ConvolutionalNetworks.ipynb，可以安全忽略下面的信息 ===========""")
+    # print("\t你需要为本作业的一部分编译 Cython extension。")
+    # print("\t后面的 notebook 小节会给出操作说明。")
 
 from .im2col import *
 
 
 def conv_forward_im2col(x, w, b, conv_param):
     """
-    A fast 实现 的 前向传播 用于 a convolutional 层
-    基于 im2col 并 col2im.
+    convolutional layer 的快速 forward pass 实现，基于 im2col 和 col2im。
     """
     N, C, H, W = x.shape
     num_filters, _, filter_height, filter_width = w.shape
     stride, pad = conv_param["stride"], conv_param["pad"]
 
-    # Check 维度
+    # 检查维度
     assert (W + 2 * pad - filter_width) % stride == 0, "width does not work"
     assert (H + 2 * pad - filter_height) % stride == 0, "height does not work"
 
@@ -31,7 +30,7 @@ def conv_forward_im2col(x, w, b, conv_param):
     out_width = (W + 2 * pad - filter_width) // stride + 1
     out = np.zeros((N, num_filters, out_height, out_width), dtype=x.dtype)
 
-    # x_cols = im2col_indices(x, w.形状[2], w.形状[3], pad, stride)
+    # x_cols = im2col_indices(x, w.shape[2], w.shape[3], pad, stride)
     x_cols = im2col_cython(x, w.shape[2], w.shape[3], pad, stride)
     res = w.reshape((w.shape[0], -1)).dot(x_cols) + b.reshape(-1, 1)
 
@@ -69,7 +68,7 @@ def conv_forward_strides(x, w, b, conv_param):
     x_cols = np.ascontiguousarray(x_stride)
     x_cols.shape = (C * HH * WW, N * out_h * out_w)
 
-    # Now 所有 our convolutions are a big 矩阵 multiply
+    # 现在所有卷积都变成一个大的矩阵乘法。
     res = w.reshape(F, -1).dot(x_cols) + b.reshape(-1, 1)
 
     # reshape 输出
@@ -77,8 +76,7 @@ def conv_forward_strides(x, w, b, conv_param):
     out = res.transpose(1, 0, 2, 3)
 
     # 返回连续数组，便于后续处理
-    # old version 的 conv_前向_fast doesn't do 这个, so 用于 a fair
-    # comparison we won't either
+    # 旧版 conv_forward_fast 不做这个处理；为了公平比较，这里也不做。
     out = np.ascontiguousarray(out)
 
     cache = (x, w, b, conv_param, x_cols)
@@ -107,8 +105,7 @@ def conv_backward_strides(dout, cache):
 
 def conv_backward_im2col(dout, cache):
     """
-    A fast 实现 的 反向传播 用于 a convolutional 层
-    基于 im2col 并 col2im.
+    convolutional layer 的快速 backward pass 实现，基于 im2col 和 col2im。
     """
     x, w, b, conv_param, x_cols = cache
     stride, pad = conv_param["stride"], conv_param["pad"]
@@ -120,7 +117,7 @@ def conv_backward_im2col(dout, cache):
     dw = dout_reshaped.dot(x_cols.T).reshape(w.shape)
 
     dx_cols = w.reshape(num_filters, -1).T.dot(dout_reshaped)
-    # dx = col2im_indices(dx_cols, x.形状, filter_height, filter_width, pad, stride)
+    # dx = col2im_indices(dx_cols, x.shape, filter_height, filter_width, pad, stride)
     dx = col2im_cython(
         dx_cols,
         x.shape[0],
@@ -142,12 +139,11 @@ conv_backward_fast = conv_backward_strides
 
 def max_pool_forward_fast(x, pool_param):
     """
-    A fast 实现 的 前向传播 用于 a max pooling 层.
+    max pooling layer 的快速 forward pass 实现。
 
-    This chooses between reshape method 并 im2col method. If pooling
-    regions are square 并 tile 输入 image, 然后 we 可以 使用 reshape
-    method which is very fast. Otherwise we f所有 back on im2col method, which
-    is not much 快于 naive method.
+    该实现会在 reshape method 和 im2col method 之间选择。如果 pooling region 是
+    正方形并且能平铺输入图像，则可以使用非常快的 reshape method。否则回退到
+    im2col method，它并不比 naive method 快很多。
     """
     N, C, H, W = x.shape
     pool_height, pool_width = pool_param["pool_height"], pool_param["pool_width"]
@@ -166,10 +162,9 @@ def max_pool_forward_fast(x, pool_param):
 
 def max_pool_backward_fast(dout, cache):
     """
-    A fast 实现 的 反向传播 用于 a max pooling 层.
+    max pooling layer 的快速 backward pass 实现。
 
-    This switches between reshape method an im2col method depending on
-    which method was 使用 到 generate cache.
+    根据生成 cache 时使用的方法，在 reshape method 和 im2col method 之间切换。
     """
     method, real_cache = cache
     if method == "reshape":
@@ -182,10 +177,9 @@ def max_pool_backward_fast(dout, cache):
 
 def max_pool_forward_reshape(x, pool_param):
     """
-    A fast 实现 的 前向传播 用于 max pooling 层 该 使用s
-    some clever reshaping.
+    使用巧妙 reshaping 的 max pooling layer 快速 forward pass 实现。
 
-    This 可以 only be 使用 用于 square pooling regions 该 tile 输入.
+    该方法只能用于能平铺输入的正方形 pooling region。
     """
     N, C, H, W = x.shape
     pool_height, pool_width = pool_param["pool_height"], pool_param["pool_width"]
@@ -204,20 +198,15 @@ def max_pool_forward_reshape(x, pool_param):
 
 def max_pool_backward_reshape(dout, cache):
     """
-    A fast 实现 的 反向传播 用于 max pooling 层 该
-    使用s some clever broadcasting 并 reshaping.
+    使用巧妙 broadcasting 和 reshaping 的 max pooling layer 快速 backward pass 实现。
 
-    This 可以 only be 使用 if 前向传播 was 计算得到的 使用
-    max_pool_前向_reshape.
+    只有 forward pass 使用 max_pool_forward_reshape 计算时，才能使用该方法。
 
-    注意： If there are multiple argmaxes, 这个 method 将 assign 梯度 to
-    ALL argmax elements 的 输入 rather than picking one. In 这个 case the
-    梯度 将 actu所有y be incorrect. However 这个 is unlikely 到 occur in
-    practice, so it 应该n't matter much. One possible solution is 到 split the
-    上游 梯度 equ所有y among 所有 argmax elements; 这个 应该 结果 在 a
-    valid sub梯度. 你可以 make 这个 happen by uncommenting line below;
-    however 这个 结果 在 a signifi可以t performance penalty (about 40% slower)
-    and is unlikely 到 matter 在 practice so we don't do it.
+    注意：如果存在多个 argmax，该方法会把梯度分配给输入中所有 argmax 元素，而不是
+    只选择一个。在这种情况下，梯度实际上会不正确。不过这在实践中不太可能发生，
+    因此影响不大。一个可能的解决方案是把上游梯度平均分配给所有 argmax 元素；
+    这样会得到一个合法的 subgradient。取消下面一行的注释可以实现这一点，但会带来
+    明显的性能损失（约慢 40%），而且实践中通常不重要，所以这里不这样做。
     """
     x, x_reshaped, out = cache
 
@@ -235,10 +224,9 @@ def max_pool_backward_reshape(dout, cache):
 
 def max_pool_forward_im2col(x, pool_param):
     """
-    An 实现 的 前向传播 用于 max pooling 基于 im2col.
+    基于 im2col 的 max pooling forward pass 实现。
 
-    This 并不是 much 快于 naive version, so it 应为 avoided if
-    possible.
+    它并不比 naive version 快很多，因此应尽量避免使用。
     """
     N, C, H, W = x.shape
     pool_height, pool_width = pool_param["pool_height"], pool_param["pool_width"]
@@ -262,10 +250,9 @@ def max_pool_forward_im2col(x, pool_param):
 
 def max_pool_backward_im2col(dout, cache):
     """
-    An 实现 的 反向传播 用于 max pooling 基于 im2col.
+    基于 im2col 的 max pooling backward pass 实现。
 
-    This 并不是 much 快于 naive version, so it 应为 avoided if
-    possible.
+    它并不比 naive version 快很多，因此应尽量避免使用。
     """
     x, x_cols, x_cols_argmax, pool_param = cache
     N, C, H, W = x.shape

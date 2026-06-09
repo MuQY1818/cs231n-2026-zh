@@ -14,36 +14,31 @@ from cs231n import optim
 
 class Solver(object):
     """
-    A Solver encapsulates 所有 logic necessary 用于训练 分类
-    模型. Solver performs stochastic 梯度 descent 使用 different
-    update rules defined 在 optim.py.
+    Solver 封装了训练分类模型所需的全部逻辑。Solver 使用 optim.py 中定义的
+    不同 update rule 执行 stochastic gradient descent。
 
-    solver accepts both 训练 并 验证 数据 并 标签 so it 可以
-    periodi调用y check 分类 accuracy on both 训练 并 验证
-    数据 到 watch out 用于 过拟合ting.
+    solver 接收训练和验证数据及标签，因此可以定期检查训练集和验证集上的分类
+    accuracy，用于观察是否发生 overfitting。
 
-    To 训练 a 模型, you 将 first construct a Solver instance, passing the
-    模型, 数据集, 并 various options (学习率, batch size, etc) 到 the
-    constructor. You 将 然后 调用 训练() method 到 run optimization
-    procedure 并 训练 模型.
+    要训练模型，首先构造一个 Solver 实例，将模型、数据集以及各种选项
+    （learning rate、batch size 等）传给构造函数。然后调用 train() 方法运行
+    optimization 过程并训练模型。
 
-    After 训练() method returns, 模型.params 将 contain 参数
-    该 performed best on 验证 set 在 course 的 训练.
-    In addition, instance 变量 solver.损失_history 将 contain a list
-    of 所有 损失 encountered during 训练 并 instance 变量
-    solver.训练_acc_history 并 solver.val_acc_history 将 be lists 的 the
-    accuracies 模型的 on 训练 并 验证 set at each epoch.
+    train() 方法返回后，model.params 将包含训练过程中在验证集上表现最好的参数。
+    此外，实例变量 solver.loss_history 会包含训练期间遇到的所有 loss；
+    solver.train_acc_history 和 solver.val_acc_history 会分别包含模型在每个
+    epoch 上的训练集和验证集 accuracy。
 
-    Example usage 可能 look something like 这个:
+    示例用法大致如下:
 
-    数据 = {
-      'X_训练': # 训练数据
-      'y_训练': # 训练 标签
-      'X_val': # 验证 数据
-      'y_val': # 验证 标签
+    data = {
+      'X_train': # 训练数据
+      'y_train': # 训练标签
+      'X_val': # 验证数据
+      'y_val': # 验证标签
     }
-    模型 = MyAwesomeModel(hidden_size=100, reg=10)
-    solver = Solver(模型, 数据,
+    model = MyAwesomeModel(hidden_size=100, reg=10)
+    solver = Solver(model, data,
                     update_rule='sgd',
                     optim_config={
                       'learning_rate': 1e-4,
@@ -51,69 +46,59 @@ class Solver(object):
                     lr_decay=0.95,
                     num_epochs=5, batch_size=200,
                     print_every=100)
-    solver.训练()
+    solver.train()
 
 
-    A Solver works on a 模型 object 该 must conform 到 following API:
+    Solver 作用于一个 model 对象，该对象必须符合以下 API:
 
-    - 模型.params must be a 字典 mapping string parameter names 到 numpy
-      数组 containing parameter 值.
+    - model.params 必须是一个字典，将字符串参数名映射到包含参数值的 numpy 数组。
 
-    - 模型.损失(X, y) must be a 函数 该 计算 训练时 损失 and
-      梯度, 并 测试时 分类 分数, 使用 following 输入
-      and 输出:
+    - model.loss(X, y) 必须是一个函数，使用以下输入和输出，计算 training-time
+      loss 与梯度，以及 test-time 分类分数:
 
       输入:
-      - X: Array giving a minibatch 的 输入 数据 的 形状 (N, d_1, ..., d_k)
-      - y: Array 的 标签, 的 形状 (N,) giving 标签 用于 X 其中 y[i] is the
-        标签 用于 X[i].
+      - X: 给出输入数据 minibatch 的数组，形状为 (N, d_1, ..., d_k)
+      - y: 标签数组，形状为 (N,)，给出 X 的标签，其中 y[i] 是 X[i] 的标签。
 
       返回:
-      If y is None, run a 测试时 前向传播 并 return:
-      - 分数: Array 的 形状 (N, C) giving 分类 分数 用于 X 其中
-        分数[i, c] gives score 的 类别 c 用于 X[i].
+      如果 y 为 None，则运行 test-time forward pass 并返回:
+      - scores: 形状为 (N, C) 的数组，给出 X 的分类分数，其中
+        scores[i, c] 给出 X[i] 属于类别 c 的分数。
 
-      If y is not None, run a 训练 time 前向 并 反向传播 and
-      return a tuple of:
-      - 损失: Scalar giving 损失
-      - grads: Dictionary 使用 same keys as self.params mapping parameter
-        names 到 梯度 的 损失 使用 respect 到 those 参数.
+      如果 y 不是 None，则运行 training-time forward 和 backward pass，并返回:
+      - loss: 标量 loss
+      - grads: 字典，键与 self.params 相同，将参数名映射到 loss 关于这些参数的梯度。
     """
 
     def __init__(self, model, data, **kwargs):
         """
-        Construct a new Solver instance.
+        构造一个新的 Solver 实例。
 
         Required arguments:
-        - 模型: A 模型 object conforming 到 API described above
-        - 数据: A 字典 的 训练 并 验证 数据 containing:
-          'X_训练': Array, 形状 (N_训练, d_1, ..., d_k) 的 训练 images
-          'X_val': Array, 形状 (N_val, d_1, ..., d_k) 的 验证 images
-          'y_训练': Array, 形状 (N_训练,) 的 标签 用于训练 images
-          'y_val': Array, 形状 (N_val,) 的 标签 用于 验证 images
+        - model: 符合上述 API 的 model 对象
+        - data: 包含训练和验证数据的字典:
+          'X_train': 形状为 (N_train, d_1, ..., d_k) 的训练图像数组
+          'X_val': 形状为 (N_val, d_1, ..., d_k) 的验证图像数组
+          'y_train': 形状为 (N_train,) 的训练图像标签数组
+          'y_val': 形状为 (N_val,) 的验证图像标签数组
 
         Optional arguments:
-        - update_rule: A string giving name 的 an update rule 在 optim.py.
-          Default is 'sgd'.
-        - optim_config: A 字典 containing hyper参数 该 将 be
-          passed 到 chosen update rule. Each update rule requires different
-          hyper参数 (see optim.py) but 所有 update rules require a
-          'learning_rate' parameter so 该 应该 always be present.
-        - lr_decay: A scalar 用于 学习率 decay; after each epoch the
-          学习率 is multiplied by 这个 值.
-        - batch_size: Size 的 minibatches 使用 到 计算 损失 并 梯度
-          during 训练.
-        - num_epochs: 数量 epochs 到 run 用于 during 训练.
-        - print_every: Integer; 训练 损失 将 be printed every
-          print_every iterations.
-        - verbose: Boolean; if set 到 false 然后 no 输出 将 be printed
-          during 训练.
-        - num_训练_样本: 数量 训练 样本 使用 到 check 训练
-          accuracy; default is 1000; set 到 None 到 使用 entire 训练集.
-        - num_val_样本: 数量 验证 样本 到 使用 到 check val
-          accuracy; default is None, which 使用s entire 验证 set.
-        - check点_name: If not None, 然后 save 模型 check点 here every
-          epoch.
+        - update_rule: 字符串，给出 optim.py 中某个 update rule 的名称。
+          默认为 'sgd'。
+        - optim_config: 字典，包含要传给所选 update rule 的 hyperparameters。
+          不同 update rule 需要不同 hyperparameters（见 optim.py），但所有
+          update rule 都需要 'learning_rate' 参数，因此它应该始终存在。
+        - lr_decay: 标量，用于 learning rate decay；每个 epoch 后 learning rate
+          会乘以该值。
+        - batch_size: 训练时用于计算 loss 和梯度的 minibatch 大小。
+        - num_epochs: 训练期间运行的 epoch 数。
+        - print_every: 整数；每隔 print_every 次 iteration 打印 training loss。
+        - verbose: Boolean；如果设为 false，则训练期间不打印输出。
+        - num_train_samples: 检查训练 accuracy 时使用的训练样本数；默认为 1000；
+          设为 None 时使用整个训练集。
+        - num_val_samples: 检查验证 accuracy 时使用的验证样本数；默认为 None，
+          即使用整个验证集。
+        - checkpoint_name: 如果不是 None，则每个 epoch 都在这里保存模型 checkpoint。
         """
         self.model = model
         self.X_train = data["X_train"]
@@ -139,8 +124,7 @@ class Solver(object):
             extra = ", ".join('"%s"' % k for k in list(kwargs.keys()))
             raise ValueError("Unrecognized arguments %s" % extra)
 
-        # Make sure update rule exists, 然后 replace string
-        # name 使用 actual 函数
+        # 确认 update rule 存在，然后用实际函数替换字符串名称。
         if not hasattr(optim, self.update_rule):
             raise ValueError('Invalid update_rule "%s"' % self.update_rule)
         self.update_rule = getattr(optim, self.update_rule)
@@ -149,8 +133,7 @@ class Solver(object):
 
     def _reset(self):
         """
-        Set up some book-keeping 变量 用于 optimization. Don't 调用 这个
-        手动.
+        设置 optimization 需要的记录变量。不要手动调用这个方法。
         """
         # 设置若干变量用于记录训练过程
         self.epoch = 0
@@ -160,7 +143,7 @@ class Solver(object):
         self.train_acc_history = []
         self.val_acc_history = []
 
-        # Make a deep copy 的 optim_config 用于 each parameter
+        # 为每个参数深拷贝一份 optim_config。
         self.optim_configs = {}
         for p in self.model.params:
             d = {k: v for k, v in self.optim_config.items()}
@@ -168,8 +151,7 @@ class Solver(object):
 
     def _step(self):
         """
-        Make a single 梯度 update. This is 调用 by 训练() 并 应该 not
-        be 调用 手动.
+        执行单次梯度更新。该方法由 train() 调用，不应手动调用。
         """
         # 构造一个训练数据 minibatch
         num_train = self.X_train.shape[0]
@@ -213,19 +195,17 @@ class Solver(object):
 
     def check_accuracy(self, X, y, num_samples=None, batch_size=100):
         """
-        Check accuracy 模型的 on provided 数据.
+        检查模型在给定数据上的 accuracy。
 
         输入:
-        - X: Array 的 数据, 的 形状 (N, d_1, ..., d_k)
-        - y: Array 的 标签, 的 形状 (N,)
-        - num_样本: If not None, subsample 数据 并 only 测试 模型
-          on num_样本 数据点.
-        - batch_size: Split X 并 y 到 batches 的 这个 size 到 avoid 使用
-          too much memory.
+        - X: 数据数组，形状为 (N, d_1, ..., d_k)
+        - y: 标签数组，形状为 (N,)
+        - num_samples: 如果不是 None，则对数据做子采样，并只在 num_samples 个
+          数据点上测试模型。
+        - batch_size: 将 X 和 y 切分成这个大小的 batch，以避免使用过多内存。
 
         返回:
-        - acc: Scalar giving fraction 的 instances 该 were correctly
-          类别ified by 模型.
+        - acc: 标量，给出被模型正确分类的样本比例。
         """
 
         # 按需对数据做子采样
@@ -253,7 +233,7 @@ class Solver(object):
 
     def train(self):
         """
-        Run optimization 到 训练 模型.
+        运行 optimization 来训练模型。
         """
         num_train = self.X_train.shape[0]
         iterations_per_epoch = max(num_train // self.batch_size, 1)
@@ -269,16 +249,15 @@ class Solver(object):
                     % (t + 1, num_iterations, self.loss_history[-1])
                 )
 
-            # At end 的 every epoch, increment epoch counter 并 decay
-            # 学习率.
+            # 每个 epoch 结束时，递增 epoch 计数器并衰减 learning rate。
             epoch_end = (t + 1) % iterations_per_epoch == 0
             if epoch_end:
                 self.epoch += 1
                 for k in self.optim_configs:
                     self.optim_configs[k]["learning_rate"] *= self.lr_decay
 
-            # Check 训练 并 val accuracy on first iteration, last
-            # iteration, 并 at end 的 each epoch.
+            # 在第一次 iteration、最后一次 iteration 和每个 epoch 结束时检查
+            # 训练集和验证集 accuracy。
             first_it = t == 0
             last_it = t == num_iterations - 1
             if first_it or last_it or epoch_end:

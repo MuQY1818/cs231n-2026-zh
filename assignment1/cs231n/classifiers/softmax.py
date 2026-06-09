@@ -6,21 +6,20 @@ from past.builtins import xrange
 
 def softmax_loss_naive(W, X, y, reg):
     """
-    Softmax 损失 函数, naive 实现 (使用 loops)
+    Softmax 损失函数的朴素实现（使用循环）。
 
-    输入 have 维度 D, there are C 类别, 并 we operate on minibatches
-    of N 样本.
+    输入维度为 D，共有 C 个类别；本函数在包含 N 个样本的 minibatch 上操作。
 
     输入:
-    - W: A numpy 数组 的 形状 (D, C) containing 权重.
-    - X: A numpy 数组 的 形状 (N, D) containing a minibatch 的 数据.
-    - y: A numpy 数组 的 形状 (N,) containing 训练 标签; y[i] = c 均值
-      该 X[i] has 标签 c, 其中 0 <= c < C.
-    - reg: (float) 正则化 strength
+    - W: 形状为 (D, C) 的 numpy 数组，包含权重。
+    - X: 形状为 (N, D) 的 numpy 数组，包含一个 minibatch 的数据。
+    - y: 形状为 (N,) 的 numpy 数组，包含训练标签；
+      y[i] = c 表示 X[i] 的标签为 c，其中 0 <= c < C。
+    - reg: (float) 正则化强度。
 
-    返回 a tuple of:
-    - 损失 as single float
-    - 梯度 使用 respect 到 权重 W; an 数组 的 same 形状 as W
+    返回一个 tuple：
+    - 单个 float 形式的损失。
+    - 关于权重 W 的梯度；形状与 W 相同。
     """
     # 将损失和梯度初始化为零。
     loss = 0.0
@@ -41,16 +40,14 @@ def softmax_loss_naive(W, X, y, reg):
         loss -= logp[y[i]]  # 负对数概率即为损失
 
 
-    # 归一化 hinge 损失 加正则化
+    # 对损失取平均并加上正则化项。
     loss = loss / num_train + reg * np.sum(W * W)
 
     #############################################################################
     # TODO:                                                                     #
-    # 计算 梯度 的 损失 函数 并 存储 it dW.                #
-    # Rather 该 first 计算 损失 并 然后 计算 derivative,   #
-    # it may be simpler 到 计算 derivative at same time 该     #
-    # 损失 is being 计算得到的. As a 结果 你可以 需要 到 modify some 的    #
-    # code above 到 计算 梯度.                                       #
+    # 计算损失函数的梯度，并将其存入 dW。与其先计算损失再计算导数，             #
+    # 更简单的做法可能是在计算损失的同时计算导数。                              #
+    # 因此你可能需要修改上面部分代码来计算梯度。                                #
     #############################################################################
 
 
@@ -59,9 +56,9 @@ def softmax_loss_naive(W, X, y, reg):
 
 def softmax_loss_vectorized(W, X, y, reg):
     """
-    Softmax 损失 函数, 向量化版本.
+    Softmax 损失函数的向量化版本。
 
-    输入 并 输出 are same as softmax_损失_naive.
+    输入和输出与 softmax_loss_naive 相同。
     """
     # 将损失和梯度初始化为零。
     loss = 0.0
@@ -70,19 +67,15 @@ def softmax_loss_vectorized(W, X, y, reg):
 
     #############################################################################
     # TODO:                                                                     #
-    # Implement a 向量化版本 的 softmax 损失, storing           #
-    # 结果 在 损失.                                                           #
+    # 实现 softmax 损失的向量化版本，并将结果存入 loss。                       #
     #############################################################################
 
 
     #############################################################################
     # TODO:                                                                     #
-    # Implement a 向量化版本 的 梯度 用于 softmax            #
-    # 损失, 将结果存储 在 dW.                                           #
+    # 实现 softmax 损失梯度的向量化版本，并将结果存入 dW。                     #
     #                                                                           #
-    # 提示： Instead 的 计算 梯度 来自 scratch, it may be easier    #
-    # 复用 some 的 中间值 该 you 使用 到 计算     #
-    # 损失.                                                                     #
+    # 提示：与其从头计算梯度，复用你计算损失时得到的中间值可能更容易。          #
     #############################################################################
 
 

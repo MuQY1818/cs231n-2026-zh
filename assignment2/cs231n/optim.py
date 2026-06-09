@@ -32,10 +32,10 @@ setting next_w equal to w.
 
 def sgd(w, dw, config=None):
     """
-    Performs vanilla stochastic 梯度 descent.
+    执行 vanilla stochastic gradient descent。
 
     config format:
-    - learning_rate: Scalar 学习率.
+    - learning_rate: 标量 learning rate。
     """
     if config is None:
         config = {}
@@ -47,14 +47,13 @@ def sgd(w, dw, config=None):
 
 def sgd_momentum(w, dw, config=None):
     """
-    Performs stochastic 梯度 descent 使用 momentum.
+    使用 momentum 执行 stochastic gradient descent。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - momentum: Scalar between 0 并 1 giving momentum 值.
-      Setting momentum = 0 reduces 到 sgd.
-    - velocity: A numpy 数组 的 same 形状 as w 并 dw 使用 到 存储 a
-      moving average 的 梯度.
+    - learning_rate: 标量 learning rate。
+    - momentum: 0 到 1 之间的标量，给出 momentum 值。
+      设置 momentum = 0 时退化为 sgd。
+    - velocity: 与 w 和 dw 形状相同的 numpy 数组，用于存储梯度的 moving average。
     """
     if config is None:
         config = {}
@@ -64,8 +63,8 @@ def sgd_momentum(w, dw, config=None):
 
     next_w = None
     ###########################################################################
-    # TODO：实现 momentum update formula. 将更新后的 值 在 #
-    # next_w 变量. 你应该 also 使用 并 update velocity v.     #
+    # TODO：实现 momentum update formula。将更新后的值存入 next_w 变量。还应    #
+    # 使用并更新 velocity v。                                                   #
     ###########################################################################
 
     ###########################################################################
@@ -78,15 +77,14 @@ def sgd_momentum(w, dw, config=None):
 
 def rmsprop(w, dw, config=None):
     """
-    使用s RMSProp update rule, which 使用s a moving average 的 squared
-    梯度 值 到 set adaptive per-parameter 学习率s.
+    使用 RMSProp update rule。该规则使用 squared gradient 值的 moving average，
+    为每个参数设置自适应 learning rate。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - decay_rate: Scalar between 0 并 1 giving decay rate 用于 squared
-      梯度 cache.
-    - epsilon: Sm所有 scalar 使用 用于 smoothing 到 avoid dividing by zero.
-    - cache: Moving average 的 second moments 的 梯度.
+    - learning_rate: 标量 learning rate。
+    - decay_rate: 0 到 1 之间的标量，给出 squared gradient cache 的 decay rate。
+    - epsilon: 用于 smoothing 的小标量，避免除以 0。
+    - cache: 梯度二阶矩的 moving average。
     """
     if config is None:
         config = {}
@@ -97,9 +95,8 @@ def rmsprop(w, dw, config=None):
 
     next_w = None
     ###########################################################################
-    # TODO：实现 RMSprop update formula, 将下一个值存储 的 w #
-    # in next_w 变量. 不要忘记 到 update cache 值 存储 在    #
-    # config['cache'].                                                        #
+    # TODO：实现 RMSprop update formula，将 w 的下一个值存入 next_w 变量。      #
+    # 不要忘记更新存储在 config['cache'] 中的 cache 值。                       #
     ###########################################################################
 
     ###########################################################################
@@ -111,16 +108,16 @@ def rmsprop(w, dw, config=None):
 
 def adam(w, dw, config=None):
     """
-    使用s Adam update rule, which incorporates moving averages 的 both the
-    梯度 并 its square 并 a bias correction term.
+    使用 Adam update rule。该规则结合了梯度及其平方的 moving average，以及
+    bias correction 项。
 
     config format:
-    - learning_rate: Scalar 学习率.
-    - beta1: Decay rate 用于 moving average 的 first moment 的 梯度.
-    - beta2: Decay rate 用于 moving average 的 second moment 的 梯度.
-    - epsilon: Sm所有 scalar 使用 用于 smoothing 到 avoid dividing by zero.
-    - m: Moving average 的 梯度.
-    - v: Moving average 的 squared 梯度.
+    - learning_rate: 标量 learning rate。
+    - beta1: 梯度一阶矩 moving average 的 decay rate。
+    - beta2: 梯度二阶矩 moving average 的 decay rate。
+    - epsilon: 用于 smoothing 的小标量，避免除以 0。
+    - m: 梯度的 moving average。
+    - v: squared gradient 的 moving average。
     - t: Iteration number.
     """
     if config is None:
@@ -135,12 +132,10 @@ def adam(w, dw, config=None):
 
     next_w = None
     ###########################################################################
-    # TODO：实现 Adam update formula, 将下一个值存储 的 w 在 #
-    # next_w 变量. 不要忘记 到 update m, v, 并 t 变量   #
-    # 存储 在 config.                                                       #
+    # TODO：实现 Adam update formula，将 w 的下一个值存入 next_w 变量。不要忘记 #
+    # 更新 config 中存储的 m、v 和 t 变量。                                    #
     #                                                                         #
-    # 注意： In order 到 match 参考 输出, please modify t _before_  #
-    # 使用 it 在 any calculations.                                           #
+    # 注意：为了匹配参考输出，请在任何计算使用 t 之前先修改 t。                 #
     ###########################################################################
 
     ###########################################################################

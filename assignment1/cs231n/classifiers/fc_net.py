@@ -9,18 +9,17 @@ from ..layer_utils import *
 
 class TwoLayerNet(object):
     """
-    A two-层 fully-connected neural network 使用 ReLU nonlinearity and
-    softmax 损失 该 使用s a modular 层 design. We assume an 输入 维度
-    of D, a hidden 维度 H, 并 perform 分类 在 C 类别.
+    一个使用 ReLU 非线性和 softmax 损失的两层全连接神经网络，
+    采用模块化层设计。我们假设输入维度为 D，隐藏层维度为 H，
+    并在 C 个类别上进行分类。
 
-    architecure 应为 affine - relu - affine - softmax.
+    网络结构应为 affine - relu - affine - softmax。
 
-    Note 该 这个 类别 does not implement 梯度 descent; instead, it
-    将 interact 使用 a separate Solver object 该 is responsible 用于 running
-    optimization.
+    注意：这个类不实现梯度下降；它会与单独的 Solver 对象配合，
+    由 Solver 负责执行优化过程。
 
-    learnable 参数 模型的 are 存储 在 字典
-    self.params 该 maps parameter names 到 numpy 数组.
+    模型的可学习参数存储在 self.params 字典中；
+    该字典将参数名映射到 numpy 数组。
     """
 
     def __init__(
@@ -32,27 +31,23 @@ class TwoLayerNet(object):
         reg=0.0,
     ):
         """
-        初始化 a new network.
+        初始化一个新网络。
 
         输入:
-        - 输入_dim: An integer giving size 的 输入
-        - hidden_dim: An integer giving size 的 hidden 层
-        - num_类别: An integer giving 数量 类别 到 类别ify
-        - weight_缩放: Scalar giving 标准差 用于 random
-          initialization 的 权重.
-        - reg: Scalar giving L2 正则化 strength.
+        - input_dim: 整数，表示输入大小。
+        - hidden_dim: 整数，表示隐藏层大小。
+        - num_classes: 整数，表示分类类别数。
+        - weight_scale: 标量，表示随机初始化权重时使用的标准差。
+        - reg: 标量，表示 L2 正则化强度。
         """
         self.params = {}
         self.reg = reg
 
         ############################################################################
-        # TODO: 初始化 权重 并 偏置 的 two-层 net. Weights    #
-        # 应为 初始化 来自 a Gaussian centered at 0.0 使用               #
-        # 标准差 equal 到 weight_缩放, 并 偏置 应为           #
-        # 初始化 到 zero. All 权重 并 偏置 应为 存储 在      #
-        # 字典 self.params, 使用 first 层 权重                         #
-        # and 偏置 使用 keys 'W1' 并 'b1' 并 second 层                 #
-        # 权重 并 偏置 使用 keys 'W2' 并 'b2'.                         #
+        # TODO: 初始化两层网络的权重和偏置。权重应从均值为 0.0、标准差为       #
+        # weight_scale 的高斯分布中初始化，偏置应初始化为 0。所有权重和偏置     #
+        # 都应存储在 self.params 字典中：第一层权重和偏置使用键 'W1'、'b1'，  #
+        # 第二层权重和偏置使用键 'W2'、'b2'。                                  #
         ############################################################################
 
         ############################################################################
@@ -61,47 +56,42 @@ class TwoLayerNet(object):
 
     def loss(self, X, y=None):
         """
-        计算 损失 并 梯度 用于 a minibatch 的 数据.
+        计算一个 minibatch 数据的损失和梯度。
 
         输入:
-        - X: Array 的 输入 数据 的 形状 (N, d_1, ..., d_k)
-        - y: Array 的 标签, 的 形状 (N,). y[i] gives 标签 用于 X[i].
+        - X: 输入数据数组，形状为 (N, d_1, ..., d_k)。
+        - y: 标签数组，形状为 (N,)。y[i] 是 X[i] 的标签。
 
         返回:
-        If y is None, 然后 run a 测试时 前向传播 模型的 并 return:
-        - 分数: Array 的 形状 (N, C) giving 分类 分数, 其中
-          分数[i, c] is 分类 score 用于 X[i] 并 类别 c.
+        如果 y 为 None，则执行测试时前向传播并返回：
+        - scores: 形状为 (N, C) 的数组，给出分类分数；
+          scores[i, c] 是样本 X[i] 属于类别 c 的分数。
 
-        If y is not None, 然后 run a 训练时 前向 并 反向传播 and
-        return a tuple of:
-        - 损失: Scalar 值 giving 损失
-        - grads: Dictionary 使用 same keys as self.params, mapping parameter
-          names 到 梯度 的 损失 使用 respect 到 those 参数.
+        如果 y 不为 None，则执行训练时前向传播和反向传播，并返回一个 tuple：
+        - loss: 标量，表示损失。
+        - grads: 字典，键与 self.params 相同，将参数名映射到对应损失梯度。
         """
         scores = None
         ############################################################################
-        # TODO：实现 前向传播 用于 two-层 net, 计算    #
-        # 类别分数 用于 X 并 storing them 在 分数 变量.              #
+        # TODO：实现两层网络的前向传播，计算 X 的类别分数并存入 scores 变量。    #
         ############################################################################
 
         ############################################################################
         #                             你的代码结束                             #
         ############################################################################
 
-        # If y is None 然后 we are 在 测试 模式 so just return 分数
+        # 如果 y 为 None，则处于测试模式，直接返回 scores。
         if y is None:
             return scores
 
         loss, grads = 0, {}
         ############################################################################
-        # TODO：实现 反向传播 用于 two-层 net. 存储 损失  #
-        # in 损失 变量 并 梯度 在 grads 字典. 计算 数据 #
-        # 损失 使用 softmax, 并 确保 该 grads[k] holds 梯度 用于  #
-        # self.params[k]. 不要忘记 到 add L2 正则化!                   #
+        # TODO：实现两层网络的反向传播。将损失存入 loss 变量，梯度存入 grads     #
+        # 字典。使用 softmax 计算数据损失，并确保 grads[k] 保存的是             #
+        # self.params[k] 对应的梯度。不要忘记加入 L2 正则化。                   #
         #                                                                          #
-        # 注意： To ensure 该 your 实现 与参考实现匹配 并 能通过   #
-        # 自动测试, 确保 该 your L2 正则化 包含 a 因子 #
-        # of 0.5 到 简化表达式 用于 梯度.                      #
+        # 注意：为了与参考实现匹配并通过自动测试，L2 正则化项应包含 0.5 因子，   #
+        # 这样可以简化梯度表达式。                                               #
         ############################################################################
 
         ############################################################################
@@ -134,17 +124,16 @@ class TwoLayerNet(object):
 class FullyConnectedNet(object):
     """多层全连接神经网络类。
 
-    Network contains an arbitrary 数量 hidden 层, ReLU nonlinearities,
-    and a softmax 损失 函数. This 将 also implement dropout 并 batch/层
-    归一化 as options. For a network 使用 L 层, architecture 将 be
+    网络可以包含任意数量的隐藏层、ReLU 非线性和一个 softmax 损失函数。
+    本类还会可选实现 dropout 以及 batch/layer normalization。
+    对于一个 L 层网络，其结构为：
 
     {affine - [batch/层 norm] - relu - [dropout]} x (L - 1) - affine - softmax
 
-    其中 batch/层 归一化 并 dropout are optional 并 {...} block is
-    repeated L - 1 times.
+    其中 batch/layer normalization 和 dropout 都是可选的，
+    {...} 这个 block 会重复 L - 1 次。
 
-    Learnable 参数 are 存储 在 self.params 字典 并 将 be learned
-    使用 Solver 类别.
+    可学习参数存储在 self.params 字典中，并将由 Solver 类学习。
     """
 
     def __init__(
@@ -162,21 +151,19 @@ class FullyConnectedNet(object):
         """初始化新的 FullyConnectedNet。
 
         输入:
-        - hidden_dims: A list 的 integers giving size 的 each hidden 层.
-        - 输入_dim: An integer giving size 的 输入.
-        - num_类别: An integer giving 数量 类别 到 类别ify.
-        - dropout_keep_ratio: Scalar between 0 并 1 giving dropout strength.
-            If dropout_keep_ratio=1 然后 network 应该 不要使用 dropout at 所有.
-        - 归一化: What type 的 归一化 network 应该 使用. Valid 值
-            are "batchnorm", "层norm", or None 用于 no 归一化 (default).
-        - reg: Scalar giving L2 正则化 strength.
-        - weight_缩放: Scalar giving 标准差 用于 random
-            initialization 的 权重.
-        - dtype: A numpy 数据type object; 所有 computations 将 be performed 使用
-            这个 数据type. float32 is faster but less accurate, so 你应该 使用
-            float64 用于 numeric 梯度 checking.
-        - seed: If not None, 然后 pass 这个 random seed 到 dropout 层.
-            This 将 make dropout 层 deteriminstic so we 可以 梯度 check 模型.
+        - hidden_dims: 整数列表，给出每个隐藏层的大小。
+        - input_dim: 整数，给出输入大小。
+        - num_classes: 整数，给出分类类别数。
+        - dropout_keep_ratio: 0 到 1 之间的标量，表示 dropout 保留比例。
+          如果 dropout_keep_ratio=1，则网络不使用 dropout。
+        - normalization: 网络使用的归一化类型；合法值为 "batchnorm"、
+          "layernorm" 或 None（默认表示不使用归一化）。
+        - reg: 标量，表示 L2 正则化强度。
+        - weight_scale: 标量，表示随机初始化权重时使用的标准差。
+        - dtype: numpy 数据类型；所有计算都会使用该数据类型。
+          float32 更快但不够精确，因此做数值梯度检查时应使用 float64。
+        - seed: 若不为 None，则将这个随机种子传给 dropout 层。
+          这会让 dropout 层具有确定性，从而便于做梯度检查。
         """
         self.normalization = normalization
         self.use_dropout = dropout_keep_ratio != 1
@@ -186,36 +173,32 @@ class FullyConnectedNet(object):
         self.params = {}
 
         ############################################################################
-        # TODO: 初始化 参数 网络的, 存储所有值 在    #
-        # self.params 字典. 存储 权重 并 偏置 用于 first 层 #
-        # in W1 并 b1; 用于 second 层 使用 W2 并 b2, etc. Weights 应为 #
-        # 初始化 来自 a normal distribution centered at 0 使用 standard       #
-        # deviation equal 到 weight_缩放. Biases 应为 初始化 到 zero.   #
+        # TODO: 初始化网络参数，并将所有值存储在 self.params 字典中。第一层      #
+        # 的权重和偏置存为 W1 和 b1，第二层存为 W2 和 b2，依此类推。权重应从    #
+        # 均值为 0、标准差为 weight_scale 的正态分布中初始化，偏置初始化为 0。   #
         #                                                                          #
-        # When 使用 batch 归一化, 存储 缩放 并 平移 参数 用于 #
-        # first 层 在 gamma1 并 beta1; 用于 second 层 使用 gamma2 并     #
-        # beta2, etc. Scale 参数 应为 初始化 到 ones 并 平移     #
-        # 参数 应为 初始化 到 zeros.                               #
+        # 使用 batch normalization 时，第一层的缩放和平移参数存为 gamma1 和     #
+        # beta1，第二层存为 gamma2 和 beta2，依此类推。缩放参数初始化为 1，      #
+        # 平移参数初始化为 0。                                                    #
         ############################################################################
 
         ############################################################################
         #                             你的代码结束                             #
         ############################################################################
 
-        # When 使用 dropout 我们需要 到 pass a dropout_param 字典 到 each
-        # dropout 层 so 该 层 knows dropout 概率 并 模式
-        # (训练 / 测试). 你可以 pass same dropout_param 到 each dropout 层.
+        # 使用 dropout 时，需要向每个 dropout 层传入 dropout_param 字典，
+        # 让层知道 dropout 概率和当前模式（训练/测试）。
+        # 可以把同一个 dropout_param 传给每个 dropout 层。
         self.dropout_param = {}
         if self.use_dropout:
             self.dropout_param = {"mode": "train", "p": dropout_keep_ratio}
             if seed is not None:
                 self.dropout_param["seed"] = seed
 
-        # With batch 归一化 我们需要 到 keep track 的 running 均值 and
-        # 方差, so 我们需要 到 pass a special bn_param object 到 each batch
-        # 归一化 层. 你应该 pass self.bn_params[0] 到 前向传播
-        # of first batch 归一化 层, self.bn_params[1] 到 前向
-        # pass 的 second batch 归一化 层, etc.
+        # 使用 batch normalization 时，需要跟踪 running mean 和 running variance，
+        # 因此要向每个 batch normalization 层传入一个特殊的 bn_param 对象。
+        # 第一层 batch normalization 的前向传播应使用 self.bn_params[0]，
+        # 第二层使用 self.bn_params[1]，依此类推。
         self.bn_params = []
         if self.normalization == "batchnorm":
             self.bn_params = [{"mode": "train"} for i in range(self.num_layers - 1)]
@@ -230,25 +213,23 @@ class FullyConnectedNet(object):
         """计算全连接网络的损失和梯度。
         
         输入:
-        - X: Array 的 输入 数据 的 形状 (N, d_1, ..., d_k)
-        - y: Array 的 标签, 的 形状 (N,). y[i] gives 标签 用于 X[i].
+        - X: 输入数据数组，形状为 (N, d_1, ..., d_k)。
+        - y: 标签数组，形状为 (N,)。y[i] 是 X[i] 的标签。
 
         返回:
-        If y is None, 然后 run a 测试时 前向传播 模型的 并 return:
-        - 分数: Array 的 形状 (N, C) giving 分类 分数, 其中
-            分数[i, c] is 分类 score 用于 X[i] 并 类别 c.
+        如果 y 为 None，则执行测试时前向传播并返回：
+        - scores: 形状为 (N, C) 的数组，给出分类分数；
+          scores[i, c] 是样本 X[i] 属于类别 c 的分数。
 
-        If y is not None, 然后 run a 训练时 前向 并 反向传播 and
-        return a tuple of:
-        - 损失: Scalar 值 giving 损失
-        - grads: Dictionary 使用 same keys as self.params, mapping parameter
-            names 到 梯度 的 损失 使用 respect 到 those 参数.
+        如果 y 不为 None，则执行训练时前向传播和反向传播，并返回一个 tuple：
+        - loss: 标量，表示损失。
+        - grads: 字典，键与 self.params 相同，将参数名映射到对应损失梯度。
         """
         X = X.astype(self.dtype)
         mode = "test" if y is None else "train"
 
-        # Set 训练/测试 模式 用于 batchnorm params 并 dropout param since they
-        # behave differently during 训练 并 测试.
+        # 设置 batchnorm 参数和 dropout 参数的训练/测试模式；
+        # 它们在训练和测试时行为不同。
         if self.use_dropout:
             self.dropout_param["mode"] = mode
         if self.normalization == "batchnorm":
@@ -256,16 +237,12 @@ class FullyConnectedNet(object):
                 bn_param["mode"] = mode
         scores = None
         ############################################################################
-        # TODO：实现 前向传播 用于 fully connected net, 计算  #
-        # 类别分数 用于 X 并 storing them 在 分数 变量.          #
+        # TODO：实现全连接网络的前向传播，计算 X 的类别分数并存入 scores 变量。  #
         #                                                                          #
-        # When 使用 dropout, you'll 需要 到 pass self.dropout_param 到 each       #
-        # dropout 前向传播.                                                    #
+        # 使用 dropout 时，需要把 self.dropout_param 传给每个 dropout 前向传播。 #
         #                                                                          #
-        # When 使用 batch 归一化, you'll 需要 到 pass self.bn_params[0] 到 #
-        # 前向传播 用于 first batch 归一化 层, pass           #
-        # self.bn_params[1] 到 前向传播 用于 second batch 归一化 #
-        # 层, etc.                                                              #
+        # 使用 batch normalization 时，第一层 batch normalization 的前向传播要    #
+        # 传入 self.bn_params[0]，第二层传入 self.bn_params[1]，依此类推。        #
         ############################################################################
 
         ############################################################################
@@ -278,17 +255,14 @@ class FullyConnectedNet(object):
 
         loss, grads = 0.0, {}
         ############################################################################
-        # TODO：实现 反向传播 用于 fully connected net. 存储 #
-        # 损失 在 损失 变量 并 梯度 在 grads 字典. 计算 #
-        # 数据 损失 使用 softmax, 并 确保 该 grads[k] holds 梯度 #
-        # for self.params[k]. 不要忘记 到 add L2 正则化!               #
+        # TODO：实现全连接网络的反向传播。将损失存入 loss 变量，梯度存入 grads   #
+        # 字典。使用 softmax 计算数据损失，并确保 grads[k] 保存的是             #
+        # self.params[k] 对应的梯度。不要忘记加入 L2 正则化。                   #
         #                                                                          #
-        # When 使用 batch/层 归一化, you don't 需要 到 regularize   #
-        # 缩放 并 平移 参数.                                              #
+        # 使用 batch/layer normalization 时，不需要正则化缩放和平移参数。        #
         #                                                                          #
-        # 注意： To ensure 该 your 实现 与参考实现匹配 并 能通过   #
-        # 自动测试, 确保 该 your L2 正则化 包含 a 因子 #
-        # of 0.5 到 简化表达式 用于 梯度.                      #
+        # 注意：为了与参考实现匹配并通过自动测试，L2 正则化项应包含 0.5 因子，   #
+        # 这样可以简化梯度表达式。                                               #
         ############################################################################
 
         ############################################################################

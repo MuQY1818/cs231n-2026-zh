@@ -38,15 +38,15 @@ class GaussianDiffusion(nn.Module):
         self.num_timesteps = int(betas.shape[0])
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)  # alpha_bar_t
-        register_buffer("betas", betas)  # 可以 be accessed as self.betas
-        register_buffer("alphas", alphas)  # 可以 be accessed as self.alphas
+        register_buffer("betas", betas)  # 可通过 self.betas 访问
+        register_buffer("alphas", alphas)  # 可通过 self.alphas 访问
         register_buffer("alphas_cumprod", alphas_cumprod)  # self.alphas_cumprod
 
         #############################################################################
-        # Other coefficients 需要 到 transform between x_t, x_0, 并 noise
-        # Note 该 根据 Eq. (4) 并 its reparameterization 在 Eq. (14),
+        # 其他系数，用于在 x_t、x_0 和 noise 之间转换。
+        # 注意，根据公式 (4) 及其在公式 (14) 中的重参数化，
         # x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * noise
-        # 其中 noise is sampled 来自 N(0, 1)
+        # 其中 noise 从 N(0, 1) 采样。
         #############################################################################
         register_buffer("sqrt_alphas_cumprod", torch.sqrt(alphas_cumprod))
         register_buffer(
@@ -58,7 +58,7 @@ class GaussianDiffusion(nn.Module):
         # )
 
         #############################################################################
-        # For posterior q(x_{t-1} | x_t, x_0) 根据 Eq. (6) 并 (7) 的 paper.
+        # 根据论文公式 (6) 和 (7)，用于 posterior q(x_{t-1} | x_t, x_0)。
         #############################################################################
         # alpha_bar_{t-1}
         alphas_cumprod_prev = nn.functional.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
@@ -88,26 +88,26 @@ class GaussianDiffusion(nn.Module):
         return (img + 1) * 0.5
 
     def predict_start_from_noise(self, x_t, t, noise):
-        """Get x_start 来自 x_t 并 noise 根据 Eq. (14) 的 paper.
+        """根据论文公式 (14)，由 x_t 和 noise 得到 x_start。
         参数:
             x_t: (b, *) tensor. 带噪图像.
             t: (b,) tensor. 时间步.
-            noise: (b, *) tensor. Noise 来自 N(0, 1).
+            noise: (b, *) tensor. 来自 N(0, 1) 的 noise.
         返回:
             x_start: (b, *) tensor. 起始图像.
         """
         x_start = None
         ####################################################################
         # TODO：
-        # Transform x_t 并 noise 到 get x_start 根据 Eq.(4) 并 Eq.(14).
-        # Look at coeffs 在 `__init__` method 并 使用 `extract` 函数.
+        # 根据公式 (4) 和公式 (14)，由 x_t 和 noise 得到 x_start。
+        # 查看 `__init__` 方法中的系数，并使用 `extract` 函数。
         ####################################################################
 
         ####################################################################
         return x_start
 
     def predict_noise_from_start(self, x_t, t, x_start):
-        """Get noise 来自 x_t 并 x_start 根据 Eq. (14) 的 paper.
+        """根据论文公式 (14)，由 x_t 和 x_start 得到 noise。
         参数:
             x_t: (b, *) tensor. 带噪图像.
             t: (b,) tensor. 时间步.
@@ -118,22 +118,22 @@ class GaussianDiffusion(nn.Module):
         pred_noise = None
         ####################################################################
         # TODO：
-        # Transform x_t 并 noise 到 get x_start 根据 Eq.(4) 并 Eq.(14).
-        # Look at coeffs 在 `__init__` method 并 使用 `extract` 函数.
+        # 根据公式 (4) 和公式 (14)，由 x_t 和 x_start 得到 noise。
+        # 查看 `__init__` 方法中的系数，并使用 `extract` 函数。
         ####################################################################
 
         ####################################################################
         return pred_noise
 
     def q_posterior(self, x_start, x_t, t):
-        """Get posterior q(x_{t-1} | x_t, x_0) 根据 Eq. (6) 并 (7) 的 paper.
+        """根据论文公式 (6) 和 (7)，得到 posterior q(x_{t-1} | x_t, x_0)。
         参数:
-            x_start: (b, *) tensor. Predicted start image.
+            x_start: (b, *) tensor. 预测的起始图像.
             x_t: (b, *) tensor. 带噪图像.
             t: (b,) tensor. 时间步.
         返回:
-            posterior_均值: (b, *) tensor. Mean 的 posterior.
-            posterior_标准差: (b, *) tensor. Std 的 posterior.
+            posterior_mean: (b, *) tensor. posterior 的 mean.
+            posterior_std: (b, *) tensor. posterior 的 std.
         """
         posterior_mean = None
         posterior_std = None
@@ -148,29 +148,29 @@ class GaussianDiffusion(nn.Module):
 
     @torch.no_grad()
     def p_sample(self, x_t, t: int, model_kwargs={}):
-        """Sample 来自 p(x_{t-1} | x_t) 根据 Eq. (6) 的 paper. 使用 only during inference.
+        """根据论文公式 (6) 从 p(x_{t-1} | x_t) 采样，仅在 inference 时使用。
         参数:
             x_t: (b, *) tensor. 带噪图像.
-            t: int. Sampling time step.
-            模型_kwargs: additional arguments 用于 模型.
+            t: int. 采样时间步.
+            model_kwargs: 传给模型的额外参数.
         返回:
-            x_tm1: (b, *) tensor. Sampled image.
+            x_tm1: (b, *) tensor. 采样得到的图像.
         """
         t = torch.full((x_t.shape[0],), t, device=x_t.device, dtype=torch.long)  # (b,)
         x_tm1 = None  # sample x_{t-1} 来自 p(x_{t-1} | x_t)
 
         ##################################################################
-        # TODO：实现 sampling step p(x_{t-1} | x_t) 根据 Eq. (6):
+        # TODO：根据公式 (6) 实现 sampling step p(x_{t-1} | x_t):
         #
-        # - Steps:
-        #   1. Get 模型 预测 by 调用 self.模型 使用 appropriate args.
-        #   2. 模型 输出 可以 be either noise or x_start depending on self.objective.
-        #      你可以 恢复 other by 调用 self.predict_start_来自_noise or
-        #      self.predict_noise_来自_start as 需要.
-        #   3. Clamp 预测的 x_start 到 valid range [-1, 1]. This ensures the
-        #      generation remains stable during denoising iterations.
-        #   4. Get 均值 并 标准差 用于 q(x_{t-1} | x_t, x_0) 使用 self.q_posterior,
-        #      并 sample x_{t-1}.
+        # - 步骤：
+        #   1. 使用合适的参数调用 self.model，得到模型预测。
+        #   2. 模型输出可能是 noise，也可能是 x_start，取决于 self.objective。
+        #      你可以按需调用 self.predict_start_from_noise 或
+        #      self.predict_noise_from_start 来恢复另一个量。
+        #   3. 将预测的 x_start clamp 到有效范围 [-1, 1]，以保证 denoising
+        #      迭代过程中的生成稳定性。
+        #   4. 使用 self.q_posterior 得到 q(x_{t-1} | x_t, x_0) 的 mean 和 std，
+        #      并采样 x_{t-1}。
         ##################################################################
         
         ##################################################################
@@ -197,12 +197,12 @@ class GaussianDiffusion(nn.Module):
         return res
 
     def q_sample(self, x_start, t, noise):
-        """Sample 来自 q(x_t | x_0) 根据 Eq. (4) 的 paper.
+        """根据论文公式 (4)，从 q(x_t | x_0) 采样。
 
         参数:
             x_start: (b, *) tensor. 起始图像.
             t: (b,) tensor. 时间步.
-            noise: (b, *) tensor. Noise 来自 N(0, 1).
+            noise: (b, *) tensor. 来自 N(0, 1) 的 noise.
         返回:
             x_t: (b, *) tensor. 带噪图像.
         """
@@ -210,12 +210,12 @@ class GaussianDiffusion(nn.Module):
         x_t = None
         ####################################################################
         # TODO：
-        # Implement sampling 来自 q(x_t | x_0) 根据 Eq. (4) 的 paper.
-        # Hints: (1) Look at `__init__` method 到 see pre计算得到的 coefficients.
-        # (2) 使用 `extract` 函数 defined above 到 extract coefficients
-        # for given time step `t`. (3) Re调用 该 sampling 来自 N(mu, sigma^2)
-        # 可以 be done as: x_t = mu + sigma * noise 其中 noise is sampled 来自 N(0, 1).
-        # Approximately 3 lines 的 code.
+        # 根据论文公式 (4) 实现从 q(x_t | x_0) 的采样。
+        # 提示：(1) 查看 `__init__` 方法中的预计算系数。
+        # (2) 使用上面定义的 `extract` 函数提取给定时间步 `t` 的系数。
+        # (3) 记住从 N(mu, sigma^2) 采样可写成：
+        #     x_t = mu + sigma * noise，其中 noise 从 N(0, 1) 采样。
+        # 大约需要 3 行代码。
         ####################################################################
 
         ####################################################################
@@ -232,11 +232,11 @@ class GaussianDiffusion(nn.Module):
 
         ####################################################################
         # TODO：
-        # Implement 损失 函数 根据 Eq. (14) 的 paper.
-        # First, sample x_t 来自 q(x_t | x_0) 使用 `q_sample` 函数.
-        # Then, get 模型 预测 by 调用 self.模型 使用 appropriate args.
-        # 最后, 计算 weighted MSE 损失.
-        # Approximately 3-4 lines 的 code.
+        # 根据论文公式 (14) 实现损失函数。
+        # 首先使用 `q_sample` 函数从 q(x_t | x_0) 采样 x_t。
+        # 然后用合适参数调用 self.model，得到模型预测。
+        # 最后计算加权 MSE 损失。
+        # 大约需要 3-4 行代码。
         ####################################################################
 
         ####################################################################
@@ -246,32 +246,31 @@ class GaussianDiffusion(nn.Module):
 
 def extract(a, t, x_shape):
     """
-    Extracts appropriate coefficient 值 基于 given timesteps.
+    根据给定 timesteps 提取相应的 coefficient 值。
 
-    This 函数 gathers 值 来自 coefficient tensor `a` 根据
-    given timesteps `t` 并 reshapes them 到 match required 形状 such 该
-    it supports broadcasting 使用 tensor 的 given 形状 `x_形状`.
+    此函数会根据给定 timesteps `t`，从 coefficient tensor `a` 中 gather 值，
+    并 reshape 成所需形状，使其可以与给定形状 `x_shape` 的 tensor 广播。
 
     参数:
-        a (torch.Tensor): A tensor 的 形状 (T,), containing coefficient 值 用于 所有 timesteps.
-        t (torch.Tensor): A tensor 的 形状 (b,), representing timesteps 用于 each sample 在 batch.
-        x_形状 (tuple): 形状 的 输入 image tensor, usu所有y (b, c, h, w).
+        a (torch.Tensor): 形状为 (T,) 的 tensor，包含所有 timesteps 的 coefficient 值.
+        t (torch.Tensor): 形状为 (b,) 的 tensor，表示 batch 中每个样本的 timestep.
+        x_shape (tuple): 输入 image tensor 的形状，通常为 (b, c, h, w).
 
     返回:
-        torch.Tensor: A tensor 的 形状 (b, 1, 1, 1), containing extracted coefficient 值
-                      来自 a 用于 corresponding timestep 的 each batch element, reshaped 根据ly.
+        torch.Tensor: 形状为 (b, 1, 1, 1) 的 tensor，包含从 `a` 中为每个
+                      batch 元素对应 timestep 提取并 reshape 后的 coefficient 值.
     """
-    b, *_ = t.shape  # Extract batch size 来自 timestep tensor
-    out = a.gather(-1, t)  # Gather coefficient 值 来自 `a` 基于 `t`
+    b, *_ = t.shape  # 从 timestep tensor 中提取 batch size
+    out = a.gather(-1, t)  # 根据 `t` 从 `a` 中 gather coefficient 值
     out = out.reshape(
         b, *((1,) * (len(x_shape) - 1))
-    )  # reshape 到 (b, 1, 1, 1) 用于 broadcasting
+    )  # reshape 为 (b, 1, 1, 1) 用于 broadcasting
     return out
 
 
 def linear_beta_schedule(timesteps):
     """
-    linear schedule, proposed 在 original ddpm paper
+    linear schedule，由原始 DDPM 论文提出。
     """
     scale = 1000 / timesteps
     beta_start = scale * 0.0001
@@ -282,7 +281,7 @@ def linear_beta_schedule(timesteps):
 def cosine_beta_schedule(timesteps, s=0.008):
     """
     cosine schedule
-    as proposed 在 https://openreview.net/forum?id=-NEXDKk8gZ
+    提出于 https://openreview.net/forum?id=-NEXDKk8gZ
     """
     steps = timesteps + 1
     t = torch.linspace(0, timesteps, steps, dtype=torch.float64) / timesteps
@@ -295,8 +294,8 @@ def cosine_beta_schedule(timesteps, s=0.008):
 def sigmoid_beta_schedule(timesteps, start=-3, end=3, tau=1, clamp_min=1e-5):
     """
     sigmoid schedule
-    proposed 在 https://arxiv.org/abs/2212.11972 - Figure 8
-    better 用于 images > 64x64, when 使用 during 训练
+    提出于 https://arxiv.org/abs/2212.11972 - Figure 8
+    训练时对 images > 64x64 通常更好。
     """
     steps = timesteps + 1
     t = torch.linspace(0, timesteps, steps, dtype=torch.float64) / timesteps

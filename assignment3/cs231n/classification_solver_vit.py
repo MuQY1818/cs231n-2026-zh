@@ -23,7 +23,7 @@ def train_val(model, data_loader, train_optimizer, epoch, epochs, device='cpu'):
             total_loss += loss.item() * data.size(0)
             prediction = torch.argsort(out, dim=-1, descending=True)
             total_correct_1 += torch.sum((prediction[:, 0:1] == target.unsqueeze(dim=-1)).any(dim=-1).float()).item()
-            # total_correct_5 += torch.sum((预测[:, 0:5] == target.unsqueeze(dim=-1)).any(dim=-1).float()).item()
+            # total_correct_5 += torch.sum((prediction[:, 0:5] == target.unsqueeze(dim=-1)).any(dim=-1).float()).item()
 
             data_bar.set_description('{} Epoch: [{}/{}] Loss: {:.4f} ACC@1: {:.3f}%'
                                      .format('Train' if is_train else 'Test', epoch, epochs, total_loss / total_num,
@@ -74,4 +74,3 @@ class ClassificationSolverViT:
                 best_acc = test_acc_1
         
         self.results["best_test_acc"] = best_acc
-

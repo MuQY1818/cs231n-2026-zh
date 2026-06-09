@@ -6,26 +6,24 @@ import numpy as np
 
 def affine_forward(x, w, b):
     """
-    计算 前向传播 用于 an affine (fully-connected) 层.
+    计算 affine（全连接）层的前向传播。
 
-    输入 x has 形状 (N, d_1, ..., d_k) 并 contains a minibatch 的 N
-    样本, 其中 each 样本 x[i] has 形状 (d_1, ..., d_k). 我们将
-    reshape each 输入 到 a vector 的 维度 D = d_1 * ... * d_k, and
-    然后 transform it 到 an 输出 vector 的 维度 M.
+    输入 x 的形状为 (N, d_1, ..., d_k)，包含一个由 N 个样本组成的 minibatch。
+    每个样本 x[i] 的形状为 (d_1, ..., d_k)。我们会把每个输入 reshape 成
+    维度 D = d_1 * ... * d_k 的向量，然后将其变换为维度 M 的输出向量。
 
     输入:
-    - x: A numpy 数组 containing 输入 数据, 的 形状 (N, d_1, ..., d_k)
-    - w: A numpy 数组 的 权重, 的 形状 (D, M)
-    - b: A numpy 数组 的 偏置, 的 形状 (M,)
+    - x: 包含输入数据的 numpy 数组，形状为 (N, d_1, ..., d_k)。
+    - w: 权重 numpy 数组，形状为 (D, M)。
+    - b: 偏置 numpy 数组，形状为 (M,)。
 
-    返回 a tuple of:
-    - out: 输出, 的 形状 (N, M)
+    返回一个 tuple：
+    - out: 输出，形状为 (N, M)。
     - cache: (x, w, b)
     """
     out = None
     ###########################################################################
-    # TODO：实现 affine 前向传播. 将结果存储 在 out. You   #
-    # 将 需要 到 reshape 输入 到 rows.                               #
+    # TODO：实现 affine 前向传播，并将结果存入 out。你需要把输入 reshape 成行。 #
     ###########################################################################
 
     ###########################################################################
@@ -37,24 +35,24 @@ def affine_forward(x, w, b):
 
 def affine_backward(dout, cache):
     """
-    计算 反向传播 用于 an affine 层.
+    计算 affine 层的反向传播。
 
     输入:
-    - dout: Upstream derivative, 的 形状 (N, M)
-    - cache: Tuple of:
-      - x: 输入 数据, 的 形状 (N, d_1, ... d_k)
-      - w: Weights, 的 形状 (D, M)
-      - b: Biases, 的 形状 (M,)
+    - dout: 上游导数，形状为 (N, M)。
+    - cache: tuple，包含：
+      - x: 输入数据，形状为 (N, d_1, ... d_k)。
+      - w: 权重，形状为 (D, M)。
+      - b: 偏置，形状为 (M,)。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 x, 的 形状 (N, d1, ..., d_k)
-    - dw: Gradient 使用 respect 到 w, 的 形状 (D, M)
-    - db: Gradient 使用 respect 到 b, 的 形状 (M,)
+    返回一个 tuple：
+    - dx: 关于 x 的梯度，形状为 (N, d1, ..., d_k)。
+    - dw: 关于 w 的梯度，形状为 (D, M)。
+    - db: 关于 b 的梯度，形状为 (M,)。
     """
     x, w, b = cache
     dx, dw, db = None, None, None
     ###########################################################################
-    # TODO：实现 affine 反向传播.                               #
+    # TODO：实现 affine 反向传播。                              #
     ###########################################################################
 
     ###########################################################################
@@ -65,18 +63,18 @@ def affine_backward(dout, cache):
 
 def relu_forward(x):
     """
-    计算 前向传播 用于 a 层 的 rectified linear units (ReLUs).
+    计算 ReLU 层的前向传播。
 
     输入:
-    - x: 输入, 的 any 形状
+    - x: 输入，可以是任意形状。
 
-    返回 a tuple of:
-    - out: Output, 的 same 形状 as x
+    返回一个 tuple：
+    - out: 输出，形状与 x 相同。
     - cache: x
     """
     out = None
     ###########################################################################
-    # TODO：实现 ReLU 前向传播.                                  #
+    # TODO：实现 ReLU 前向传播。                                 #
     ###########################################################################
 
     ###########################################################################
@@ -88,18 +86,18 @@ def relu_forward(x):
 
 def relu_backward(dout, cache):
     """
-    计算 反向传播 用于 a 层 的 rectified linear units (ReLUs).
+    计算 ReLU 层的反向传播。
 
     输入:
-    - dout: Upstream derivatives, 的 any 形状
-    - cache: 输入 x, 的 same 形状 as dout
+    - dout: 上游导数，可以是任意形状。
+    - cache: 输入 x，形状与 dout 相同。
 
     返回:
-    - dx: Gradient 使用 respect 到 x
+    - dx: 关于 x 的梯度。
     """
     dx, x = None, cache
     ###########################################################################
-    # TODO：实现 ReLU 反向传播.                                 #
+    # TODO：实现 ReLU 反向传播。                                #
     ###########################################################################
 
     ###########################################################################
@@ -110,41 +108,37 @@ def relu_backward(dout, cache):
 
 def batchnorm_forward(x, gamma, beta, bn_param):
     """
-    前向传播 用于 batch 归一化.
+    batch normalization 的前向传播。
 
-    训练时 样本均值 并 (uncorrected) 样本方差 are
-    计算得到的 来自 minibatch 统计量 并 使用 到 normalize 输入的 数据.
-    训练时 we also keep an exponenti所有y decaying running 均值 的 the
-    均值 并 方差 的 each 特征, 并 这些 averages are 使用 到 normalize
-    数据 at 测试时.
+    训练时，我们根据 minibatch 统计量计算样本均值和未修正的样本方差，
+    并用它们对输入数据做归一化。训练时还会维护每个特征均值和方差的
+    指数衰减 running average，这些平均值会在测试时用于归一化数据。
 
-    At each timestep we update running averages 用于 均值 并 方差 使用
-    an exponential decay 基于 momentum parameter:
+    每个时间步，我们根据 momentum 参数，用指数衰减方式更新均值和方差的
+    running average：
 
     running_均值 = momentum * running_均值 + (1 - momentum) * sample_均值
     running_var = momentum * running_var + (1 - momentum) * sample_var
 
-    Note 该 batch 归一化 paper suggests a different 测试时
-    behavior: they 计算 样本均值 并 方差 用于 each 特征 使用 a
-    large 数量 训练 images rather than 使用 a running average. For
-    这个 实现 我们已经 chosen 到 使用 running averages instead since
-    they 不要 require an additional estimation step; torch7
-    实现 的 batch 归一化 also 使用s running averages.
+    注意：batch normalization 论文建议了另一种测试时行为：
+    用大量训练图像为每个特征计算样本均值和方差，而不是使用 running average。
+    这里我们选择使用 running average，因为它不需要额外估计步骤；
+    torch7 的 batch normalization 实现也使用 running average。
 
     输入:
-    - x: Data 的 形状 (N, D)
-    - gamma: Scale parameter 的 形状 (D,)
-    - beta: Shift paremeter 的 形状 (D,)
-    - bn_param: Dictionary 使用 following keys:
-      - 模式: '训练' or '测试'; required
-      - eps: Constant 用于 numeric stability
-      - momentum: Constant 用于 running 均值 / 方差.
-      - running_均值: Array 的 形状 (D,) giving running 均值 的 特征
-      - running_var Array 的 形状 (D,) giving running 方差 的 特征
+    - x: 数据，形状为 (N, D)。
+    - gamma: 缩放参数，形状为 (D,)。
+    - beta: 平移参数，形状为 (D,)。
+    - bn_param: 字典，包含以下键：
+      - mode: 'train' 或 'test'，必需。
+      - eps: 用于数值稳定性的常量。
+      - momentum: running mean / variance 使用的常量。
+      - running_mean: 形状为 (D,) 的数组，给出特征的 running mean。
+      - running_var: 形状为 (D,) 的数组，给出特征的 running variance。
 
-    返回 a tuple of:
-    - out: 的 形状 (N, D)
-    - cache: 一个 tuple，包含 值 需要 在 反向传播
+    返回一个 tuple：
+    - out: 形状为 (N, D)。
+    - cache: 反向传播所需值组成的 tuple。
     """
     mode = bn_param["mode"]
     eps = bn_param.get("eps", 1e-5)
@@ -157,25 +151,18 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     out, cache = None, None
     if mode == "train":
         #######################################################################
-        # TODO：实现 训练时 前向传播 用于 batch norm.      #
-        # 使用 minibatch 统计量 到 计算 均值 并 方差, 使用      #
-        # 这些 统计量 到 normalize 输入的 数据, 并 缩放 并      #
-        # 平移 归一化后的 数据 使用 gamma 并 beta.                     #
+        # TODO：实现 batch norm 的训练时前向传播。使用 minibatch 统计量计算     #
+        # 均值和方差，用它们归一化输入数据，然后用 gamma 和 beta 缩放、平移     #
+        # 归一化后的数据。                                                     #
         #                                                                     #
-        # 你应该 存储 输出 在 变量 out. Any 中间量  #
-        # 该 you 需要 用于 反向传播 应为 存储 在 cache   #
-        # 变量.                                                           #
+        # 输出应存入 out。反向传播所需的任何中间量都应存入 cache。             #
         #                                                                     #
-        # 你应该 also 使用 your 计算得到的 样本均值 并 方差 together #
-        # 使用 momentum 变量 到 update running 均值 并 running   #
-        # 方差, storing your 结果 在 running_均值 并 running_var   #
-        # 变量.                                                          #
+        # 你还应该结合 momentum，使用计算得到的样本均值和方差更新              #
+        # running_mean 和 running_var，并把结果存回这两个变量。                #
         #                                                                     #
-        # Note 该 though you 应为 keeping track 的 running         #
-        # 方差, 你应该 normalize 数据 基于 standard       #
-        # deviation (square root 的 方差) instead!                        #
-        # Referencing 原始论文 (https://arxiv.org/abs/1502.03167)   #
-        # 可能 可能会有帮助.                                          #
+        # 注意：虽然要跟踪 running variance，归一化数据时应使用标准差           #
+        # （方差的平方根）。参考原始论文 https://arxiv.org/abs/1502.03167       #
+        # 可能会有帮助。                                                       #
         #######################################################################
         pass
         #######################################################################
@@ -183,10 +170,9 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         #######################################################################
     elif mode == "test":
         #######################################################################
-        # TODO：实现 测试时 前向传播 用于 batch 归一化. #
-        # 使用 running 均值 并 方差 到 normalize 输入的 数据,   #
-        # 然后 缩放 并 平移 归一化后的 数据 使用 gamma 并 beta.      #
-        # 将结果存储 在 out 变量.                               #
+        # TODO：实现 batch normalization 的测试时前向传播。使用 running mean   #
+        # 和 running variance 归一化输入数据，然后用 gamma 和 beta 缩放、平移  #
+        # 归一化后的数据。将结果存入 out。                                     #
         #######################################################################
         pass
         #######################################################################
@@ -195,7 +181,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     else:
         raise ValueError('Invalid forward batchnorm mode "%s"' % mode)
 
-    # 将更新后的 running 均值 写回 bn_param
+    # 将更新后的 running mean 和 running variance 写回 bn_param。
     bn_param["running_mean"] = running_mean
     bn_param["running_var"] = running_var
 
@@ -204,27 +190,24 @@ def batchnorm_forward(x, gamma, beta, bn_param):
 
 def batchnorm_backward(dout, cache):
     """
-    反向传播 用于 batch 归一化.
+    batch normalization 的反向传播。
 
-    For 这个 实现, 你应该 write out a computation graph for
-    batch 归一化 on paper 并 propagate 梯度 反向 through
-    intermediate nodes.
+    对于这个实现，你应该先在纸上写出 batch normalization 的计算图，
+    然后让梯度反向流过各个中间节点。
 
     输入:
-    - dout: Upstream derivatives, 的 形状 (N, D)
-    - cache: Variable 的 中间量 来自 batchnorm_前向.
+    - dout: 上游导数，形状为 (N, D)。
+    - cache: 来自 batchnorm_forward 的中间变量。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 输入 x, 的 形状 (N, D)
-    - dgamma: Gradient 使用 respect 到 缩放 parameter gamma, 的 形状 (D,)
-    - dbeta: Gradient 使用 respect 到 平移 parameter beta, 的 形状 (D,)
+    返回一个 tuple：
+    - dx: 关于输入 x 的梯度，形状为 (N, D)。
+    - dgamma: 关于缩放参数 gamma 的梯度，形状为 (D,)。
+    - dbeta: 关于平移参数 beta 的梯度，形状为 (D,)。
     """
     dx, dgamma, dbeta = None, None, None
     ###########################################################################
-    # TODO：实现 反向传播 用于 batch 归一化. 存储    #
-    # 结果 在 dx, dgamma, 并 dbeta 变量.                         #
-    # Referencing 原始论文 (https://arxiv.org/abs/1502.03167)       #
-    # 可能 可能会有帮助.                                              #
+    # TODO：实现 batch normalization 的反向传播，将结果存入 dx、dgamma、dbeta。 #
+    # 参考原始论文 https://arxiv.org/abs/1502.03167 可能会有帮助。             #
     ###########################################################################
 
     ###########################################################################
@@ -236,26 +219,23 @@ def batchnorm_backward(dout, cache):
 
 def batchnorm_backward_alt(dout, cache):
     """
-    Alternative 反向传播 用于 batch 归一化.
+    batch normalization 的另一种反向传播实现。
 
-    For 这个 实现 你应该 work out derivatives 用于 batch
-    normalizaton 反向传播 on paper 并 简化 as much as possible. You
-    应为 able 到 derive a simple 表达式 用于 反向传播.
-    See jupyter notebook 用于 more hints.
+    对于这个实现，你应该在纸上推导 batch normalization 反向传播的导数，
+    并尽可能化简。你应该能够为反向传播推导出一个简洁表达式。
+    更多提示见 notebook。
 
-    注意： This 实现 应该 expect 到 receive same cache 变量
-    as batchnorm_反向, but 可能 不要使用 所有 的 值 在 cache.
+    注意：这个实现接收的 cache 与 batchnorm_backward 相同，
+    但不一定会使用 cache 中的所有值。
 
-    输入 / 输出: Same as batchnorm_反向
+    输入 / 输出：与 batchnorm_backward 相同。
     """
     dx, dgamma, dbeta = None, None, None
     ###########################################################################
-    # TODO：实现 反向传播 用于 batch 归一化. 存储    #
-    # 结果 在 dx, dgamma, 并 dbeta 变量.                         #
+    # TODO：实现 batch normalization 的反向传播，将结果存入 dx、dgamma、dbeta。 #
     #                                                                         #
-    # After 计算 梯度 使用 respect 到 centered 输入, you   #
-    # 应为 able 到 计算 梯度 使用 respect 到 输入 在 a     #
-    # single statement; our 实现 fits on a single 80-character line.#
+    # 在计算出关于居中输入的梯度后，你应该能用一条语句计算关于输入的梯度；      #
+    # 我们的实现可以放进一行 80 个字符以内。                                  #
     ###########################################################################
 
     ###########################################################################
@@ -267,37 +247,33 @@ def batchnorm_backward_alt(dout, cache):
 
 def layernorm_forward(x, gamma, beta, ln_param):
     """
-    前向传播 用于 层 归一化.
+    layer normalization 的前向传播。
 
-    During both 训练 并 测试时, 输入的 数据 is 归一化后的 per 数据-点,
-    before being 缩放 by gamma 并 beta 参数 identical 到 该 的 batch 归一化.
+    在训练和测试时，输入数据都会按数据点逐个归一化，然后像 batch normalization
+    一样使用 gamma 和 beta 参数进行缩放和平移。
 
-    Note 该 在 contrast 到 batch 归一化, behavior during 训练 并 测试时 for
-    层 归一化 are identical, 并 we 不要 需要 到 keep track 的 running averages
-    of any sort.
+    注意：与 batch normalization 不同，layer normalization 在训练和测试时的行为
+    是一致的，因此不需要跟踪任何 running average。
 
     输入:
-    - x: Data 的 形状 (N, D)
-    - gamma: Scale parameter 的 形状 (D,)
-    - beta: Shift paremeter 的 形状 (D,)
-    - ln_param: Dictionary 使用 following keys:
-        - eps: Constant 用于 numeric stability
+    - x: 数据，形状为 (N, D)。
+    - gamma: 缩放参数，形状为 (D,)。
+    - beta: 平移参数，形状为 (D,)。
+    - ln_param: 字典，包含以下键：
+        - eps: 用于数值稳定性的常量。
 
-    返回 a tuple of:
-    - out: 的 形状 (N, D)
-    - cache: 一个 tuple，包含 值 需要 在 反向传播
+    返回一个 tuple：
+    - out: 形状为 (N, D)。
+    - cache: 反向传播所需值组成的 tuple。
     """
     out, cache = None, None
     eps = ln_param.get("eps", 1e-5)
     ###########################################################################
-    # TODO：实现 训练时 前向传播 用于 层 norm.          #
-    # Normalize 输入的 数据, 并 缩放 并  平移 归一化后的 数据   #
-    #  使用 gamma 并 beta.                                                  #
-    # 提示： 这个 可以 be done by slightly modifying your 训练时         #
-    # 实现 的  batch 归一化, 并 inserting a line or two 的  #
-    # well-placed code. In particular, 可以 you think 的 any 矩阵            #
-    # transformations you could perform, 该 would enable you 到 copy 在   #
-    # batch norm code 并 leave it almost unchanged?                      #
+    # TODO：实现 layer norm 的训练时前向传播。归一化输入数据，然后使用 gamma    #
+    # 和 beta 缩放、平移归一化后的数据。                                      #
+    # 提示：可以在你实现的 batch normalization 训练时前向传播基础上稍作修改，   #
+    # 加入一两行恰当的代码。特别地，想想是否可以通过某种矩阵变换，几乎原样复用  #
+    # batch norm 的代码。                                                     #
     ###########################################################################
 
     ###########################################################################
@@ -308,27 +284,25 @@ def layernorm_forward(x, gamma, beta, ln_param):
 
 def layernorm_backward(dout, cache):
     """
-    反向传播 用于 层 归一化.
+    layer normalization 的反向传播。
 
-    For 这个 实现, 你可以 heavily rely on work you've done already
-    for batch 归一化.
+    对于这个实现，你可以大量复用已经为 batch normalization 做过的工作。
 
     输入:
-    - dout: Upstream derivatives, 的 形状 (N, D)
-    - cache: Variable 的 中间量 来自 层norm_前向.
+    - dout: 上游导数，形状为 (N, D)。
+    - cache: 来自 layernorm_forward 的中间变量。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 输入 x, 的 形状 (N, D)
-    - dgamma: Gradient 使用 respect 到 缩放 parameter gamma, 的 形状 (D,)
-    - dbeta: Gradient 使用 respect 到 平移 parameter beta, 的 形状 (D,)
+    返回一个 tuple：
+    - dx: 关于输入 x 的梯度，形状为 (N, D)。
+    - dgamma: 关于缩放参数 gamma 的梯度，形状为 (D,)。
+    - dbeta: 关于平移参数 beta 的梯度，形状为 (D,)。
     """
     dx, dgamma, dbeta = None, None, None
     ###########################################################################
-    # TODO：实现 反向传播 用于 层 norm.                       #
+    # TODO：实现 layer norm 的反向传播。                                      #
     #                                                                         #
-    # 提示： 这个 可以 be done by slightly modifying your 训练时         #
-    # 实现 的 batch 归一化. hints 到 前向传播    #
-    # still apply!                                                            #
+    # 提示：可以在你实现的 batch normalization 训练时反向传播基础上稍作修改。  #
+    # 前向传播中的提示仍然适用。                                               #
     ###########################################################################
 
     ###########################################################################
@@ -339,29 +313,27 @@ def layernorm_backward(dout, cache):
 
 def dropout_forward(x, dropout_param):
     """
-    Performs 前向传播 用于 (inverted) dropout.
+    执行 inverted dropout 的前向传播。
 
     输入:
-    - x: 输入 数据, 的 any 形状
-    - dropout_param: A 字典 使用 following keys:
-      - p: Dropout parameter. We keep each neuron 输出 使用 probability p.
-      - 模式: '测试' or '训练'. If 模式 is 训练, 然后 perform dropout;
-        if 模式 is 测试, 然后 just return 输入.
-      - seed: Seed 用于 random number generator. Passing seed makes 这个
-        函数 deterministic, which is 需要 用于 梯度 checking but not
-        in real networks.
+    - x: 输入数据，可以是任意形状。
+    - dropout_param: 字典，包含以下键：
+      - p: dropout 参数。每个神经元输出以概率 p 被保留。
+      - mode: 'test' 或 'train'。如果 mode 为 train，则执行 dropout；
+        如果 mode 为 test，则直接返回输入。
+      - seed: 随机数生成器种子。传入 seed 可以让该函数具有确定性，
+        这在梯度检查时需要，但真实网络中不需要。
 
-    Outputs:
-    - out: Array 的 same 形状 as x.
-    - cache: tuple (dropout_param, mask). In 训练 模式, mask is dropout
-      mask 该 was 使用 到 multiply 输入; 在 测试 模式, mask is None.
+    输出:
+    - out: 与 x 形状相同的数组。
+    - cache: tuple (dropout_param, mask)。训练模式下，mask 是与输入相乘的
+      dropout mask；测试模式下，mask 为 None。
 
-    注意： Please implement **inverted** dropout, not vanilla version 的 dropout.
-    See http://cs231n.github.io/neural-networks-2/#reg 用于 more details.
+    注意：请实现 inverted dropout，而不是 vanilla dropout。
+    更多细节见 http://cs231n.github.io/neural-networks-2/#reg。
 
-    NOTE 2: Keep 在 mind 该 p is probability 的 **keep** a neuron
-    输出; 这个 可能 be contrary 到 some sources, 其中 it is referred to
-    as probability 的 dropping a neuron 输出.
+    注意 2：这里的 p 是保留某个神经元输出的概率；这可能与一些资料中
+    “丢弃神经元输出的概率”这一说法相反。
     """
     p, mode = dropout_param["p"], dropout_param["mode"]
     if "seed" in dropout_param:
@@ -372,8 +344,8 @@ def dropout_forward(x, dropout_param):
 
     if mode == "train":
         #######################################################################
-        # TODO：实现 训练 phase 前向传播 用于 inverted dropout.   #
-        # 将 dropout mask 存储 在 mask 变量.                        #
+        # TODO：实现 inverted dropout 的训练阶段前向传播，将 dropout mask 存入 #
+        # mask 变量。                                                         #
         #######################################################################
         pass
         #######################################################################
@@ -381,7 +353,7 @@ def dropout_forward(x, dropout_param):
         #######################################################################
     elif mode == "test":
         #######################################################################
-        # TODO：实现 测试 phase 前向传播 用于 inverted dropout.   #
+        # TODO：实现 inverted dropout 的测试阶段前向传播。                    #
         #######################################################################
         pass
         #######################################################################
@@ -396,11 +368,11 @@ def dropout_forward(x, dropout_param):
 
 def dropout_backward(dout, cache):
     """
-    Perform 反向传播 用于 (inverted) dropout.
+    执行 inverted dropout 的反向传播。
 
     输入:
-    - dout: Upstream derivatives, 的 any 形状
-    - cache: (dropout_param, mask) 来自 dropout_前向.
+    - dout: 上游导数，可以是任意形状。
+    - cache: 来自 dropout_forward 的 (dropout_param, mask)。
     """
     dropout_param, mask = cache
     mode = dropout_param["mode"]
@@ -408,7 +380,7 @@ def dropout_backward(dout, cache):
     dx = None
     if mode == "train":
         #######################################################################
-        # TODO：实现 训练 phase 反向传播 用于 inverted dropout   #
+        # TODO：实现 inverted dropout 的训练阶段反向传播。                    #
         #######################################################################
         pass
         #######################################################################
@@ -421,36 +393,33 @@ def dropout_backward(dout, cache):
 
 def conv_forward_naive(x, w, b, conv_param):
     """
-    A naive 实现 的 前向传播 用于 a convolutional 层.
+    卷积层前向传播的朴素实现。
 
-    输入 consists 的 N 数据 点, each 使用 C channels, height H and
-    width W. We convolve each 输入 使用 F different filters, 其中 each filter
-    spans 所有 C channels 并 has height HH 并 width WW.
+    输入由 N 个数据点组成，每个数据点有 C 个通道、高 H、宽 W。
+    我们用 F 个不同滤波器对每个输入做卷积；每个滤波器覆盖全部 C 个通道，
+    高为 HH，宽为 WW。
 
     输入:
-    - x: 输入 数据 的 形状 (N, C, H, W)
-    - w: Filter 权重 的 形状 (F, C, HH, WW)
-    - b: Biases, 的 形状 (F,)
-    - conv_param: A 字典 使用 following keys:
-      - 'stride': 数量 pixels between adjacent receptive fields 在 the
-        horizontal 并 vertical directions.
-      - 'pad': 数量 pixels 该 将 be 使用 到 zero-pad 输入.
+    - x: 输入数据，形状为 (N, C, H, W)。
+    - w: 滤波器权重，形状为 (F, C, HH, WW)。
+    - b: 偏置，形状为 (F,)。
+    - conv_param: 字典，包含以下键：
+      - 'stride': 水平和垂直方向上相邻感受野之间的像素数。
+      - 'pad': 对输入进行 zero-pad 时使用的像素数。
 
 
-    During padding, 'pad' zeros 应为 placed symmetri调用y (i.e equ所有y on both sides)
-    along height 并 width axes 的 输入. Be careful not 到 modfiy original
-    输入 x directly.
+    padding 时，应沿输入的高度和宽度轴对称地放置 'pad' 个零
+    （也就是两侧数量相同）。注意不要直接修改原始输入 x。
 
-    返回 a tuple of:
-    - out: Output 数据, 的 形状 (N, F, H', W') 其中 H' 并 W' are given by
+    返回一个 tuple：
+    - out: 输出数据，形状为 (N, F, H', W')，其中 H' 和 W' 为：
       H' = 1 + (H + 2 * pad - HH) / stride
       W' = 1 + (W + 2 * pad - WW) / stride
     - cache: (x, w, b, conv_param)
     """
     out = None
     ###########################################################################
-    # TODO：实现 convolutional 前向传播.                         #
-    # 提示： 你可以 使用 函数 np.pad 用于 padding.                      #
+    # TODO：实现卷积前向传播。提示：可以使用 np.pad 函数进行 padding。         #
     ###########################################################################
 
     ###########################################################################
@@ -462,20 +431,20 @@ def conv_forward_naive(x, w, b, conv_param):
 
 def conv_backward_naive(dout, cache):
     """
-    A naive 实现 的 反向传播 用于 a convolutional 层.
+    卷积层反向传播的朴素实现。
 
     输入:
-    - dout: Upstream derivatives.
-    - cache: 一个 tuple，包含 (x, w, b, conv_param) as 在 conv_前向_naive
+    - dout: 上游导数。
+    - cache: 与 conv_forward_naive 中相同的 tuple，包含 (x, w, b, conv_param)。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 x
-    - dw: Gradient 使用 respect 到 w
-    - db: Gradient 使用 respect 到 b
+    返回一个 tuple：
+    - dx: 关于 x 的梯度。
+    - dw: 关于 w 的梯度。
+    - db: 关于 b 的梯度。
     """
     dx, dw, db = None, None, None
     ###########################################################################
-    # TODO：实现 convolutional 反向传播.                        #
+    # TODO：实现卷积反向传播。                                                #
     ###########################################################################
 
     ###########################################################################
@@ -486,28 +455,28 @@ def conv_backward_naive(dout, cache):
 
 def max_pool_forward_naive(x, pool_param):
     """
-    A naive 实现 的 前向传播 用于 a max-pooling 层.
+    max-pooling 层前向传播的朴素实现。
 
     输入:
-    - x: 输入 数据, 的 形状 (N, C, H, W)
-    - pool_param: 字典 使用 following keys:
-      - 'pool_height': height 的 each pooling region
-      - 'pool_width': width 的 each pooling region
-      - 'stride': 距离 between adjacent pooling regions
+    - x: 输入数据，形状为 (N, C, H, W)。
+    - pool_param: 字典，包含以下键：
+      - 'pool_height': 每个 pooling 区域的高度。
+      - 'pool_width': 每个 pooling 区域的宽度。
+      - 'stride': 相邻 pooling 区域之间的距离。
 
-    No padding is necessary here, eg 你可以 assume:
+    这里不需要 padding，例如你可以假设：
       - (H - pool_height) % stride == 0
       - (W - pool_width) % stride == 0
 
-    返回 a tuple of:
-    - out: Output 数据, 的 形状 (N, C, H', W') 其中 H' 并 W' are given by
+    返回一个 tuple：
+    - out: 输出数据，形状为 (N, C, H', W')，其中 H' 和 W' 为：
       H' = 1 + (H - pool_height) / stride
       W' = 1 + (W - pool_width) / stride
     - cache: (x, pool_param)
     """
     out = None
     ###########################################################################
-    # TODO：实现 max-pooling 前向传播                            #
+    # TODO：实现 max-pooling 前向传播。                                       #
     ###########################################################################
 
     ###########################################################################
@@ -519,18 +488,18 @@ def max_pool_forward_naive(x, pool_param):
 
 def max_pool_backward_naive(dout, cache):
     """
-    A naive 实现 的 反向传播 用于 a max-pooling 层.
+    max-pooling 层反向传播的朴素实现。
 
     输入:
-    - dout: Upstream derivatives
-    - cache: 一个 tuple，包含 (x, pool_param) as 在 前向传播.
+    - dout: 上游导数。
+    - cache: 与前向传播中相同的 tuple，包含 (x, pool_param)。
 
     返回:
-    - dx: Gradient 使用 respect 到 x
+    - dx: 关于 x 的梯度。
     """
     dx = None
     ###########################################################################
-    # TODO：实现 max-pooling 反向传播                           #
+    # TODO：实现 max-pooling 反向传播。                                      #
     ###########################################################################
 
     ###########################################################################
@@ -541,34 +510,32 @@ def max_pool_backward_naive(dout, cache):
 
 def spatial_batchnorm_forward(x, gamma, beta, bn_param):
     """
-    计算 前向传播 用于 spatial batch 归一化.
+    计算 spatial batch normalization 的前向传播。
 
     输入:
-    - x: 输入 数据 的 形状 (N, C, H, W)
-    - gamma: Scale parameter, 的 形状 (C,)
-    - beta: Shift parameter, 的 形状 (C,)
-    - bn_param: Dictionary 使用 following keys:
-      - 模式: '训练' or '测试'; required
-      - eps: Constant 用于 numeric stability
-      - momentum: Constant 用于 running 均值 / 方差. momentum=0 均值 该
-        old information is discarded completely at every time step, while
-        momentum=1 均值 该 new information is never incorporated. The
-        default 的 momentum=0.9 应该 work well 在 most situations.
-      - running_均值: Array 的 形状 (D,) giving running 均值 的 特征
-      - running_var Array 的 形状 (D,) giving running 方差 的 特征
+    - x: 输入数据，形状为 (N, C, H, W)。
+    - gamma: 缩放参数，形状为 (C,)。
+    - beta: 平移参数，形状为 (C,)。
+    - bn_param: 字典，包含以下键：
+      - mode: 'train' 或 'test'，必需。
+      - eps: 用于数值稳定性的常量。
+      - momentum: running mean / variance 使用的常量。momentum=0 表示每一步
+        都完全丢弃旧信息；momentum=1 表示永远不纳入新信息。默认值 0.9
+        在大多数情况下都能正常工作。
+      - running_mean: 形状为 (D,) 的数组，给出特征的 running mean。
+      - running_var: 形状为 (D,) 的数组，给出特征的 running variance。
 
-    返回 a tuple of:
-    - out: Output 数据, 的 形状 (N, C, H, W)
-    - cache: Values 需要 用于 反向传播
+    返回一个 tuple：
+    - out: 输出数据，形状为 (N, C, H, W)。
+    - cache: 反向传播所需的值。
     """
     out, cache = None, None
 
     ###########################################################################
-    # TODO：实现 前向传播 用于 spatial batch 归一化.       #
+    # TODO：实现 spatial batch normalization 的前向传播。                      #
     #                                                                         #
-    # 提示： 你可以 implement spatial batch 归一化 by 调用      #
-    # vanilla version 的 batch 归一化 you implemented above.           #
-    # Your 实现 应为 very short; ours is 小于 five lines. #
+    # 提示：可以通过调用上面实现的普通 batch normalization 来实现 spatial       #
+    # batch normalization。你的实现应该很短；我们的实现不到五行。              #
     ###########################################################################
 
     ###########################################################################
@@ -580,25 +547,24 @@ def spatial_batchnorm_forward(x, gamma, beta, bn_param):
 
 def spatial_batchnorm_backward(dout, cache):
     """
-    计算 反向传播 用于 spatial batch 归一化.
+    计算 spatial batch normalization 的反向传播。
 
     输入:
-    - dout: Upstream derivatives, 的 形状 (N, C, H, W)
-    - cache: Values 来自 前向传播
+    - dout: 上游导数，形状为 (N, C, H, W)。
+    - cache: 来自前向传播的值。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 输入, 的 形状 (N, C, H, W)
-    - dgamma: Gradient 使用 respect 到 缩放 parameter, 的 形状 (C,)
-    - dbeta: Gradient 使用 respect 到 平移 parameter, 的 形状 (C,)
+    返回一个 tuple：
+    - dx: 关于输入的梯度，形状为 (N, C, H, W)。
+    - dgamma: 关于缩放参数的梯度，形状为 (C,)。
+    - dbeta: 关于平移参数的梯度，形状为 (C,)。
     """
     dx, dgamma, dbeta = None, None, None
 
     ###########################################################################
-    # TODO：实现 反向传播 用于 spatial batch 归一化.      #
+    # TODO：实现 spatial batch normalization 的反向传播。                     #
     #                                                                         #
-    # 提示： 你可以 implement spatial batch 归一化 by 调用      #
-    # vanilla version 的 batch 归一化 you implemented above.           #
-    # Your 实现 应为 very short; ours is 小于 five lines. #
+    # 提示：可以通过调用上面实现的普通 batch normalization 来实现 spatial       #
+    # batch normalization。你的实现应该很短；我们的实现不到五行。              #
     ###########################################################################
 
     ###########################################################################
@@ -610,31 +576,29 @@ def spatial_batchnorm_backward(dout, cache):
 
 def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     """
-    计算 前向传播 用于 spatial group 归一化.
-    In contrast 到 层 归一化, group 归一化 splits each entry
-    in 数据 到 G contiguous pieces, which it 然后 normalizes independently.
-    Per 特征 平移 并 scaling are 然后 applied 到 数据, 在 a manner identical 到 该 的 batch 归一化 并 层 归一化.
+    计算 spatial group normalization 的前向传播。
+    与 layer normalization 不同，group normalization 会把数据中的每个样本
+    划分为 G 个连续片段，并分别独立归一化。随后会像 batch/layer normalization
+    一样，对每个特征应用平移和缩放。
 
     输入:
-    - x: 输入 数据 的 形状 (N, C, H, W)
-    - gamma: Scale parameter, 的 形状 (1, C, 1, 1)
-    - beta: Shift parameter, 的 形状 (1, C, 1, 1)
-    - G: Integer mumber 的 groups 到 split 到, 应为 a divisor 的 C
-    - gn_param: Dictionary 使用 following keys:
-      - eps: Constant 用于 numeric stability
+    - x: 输入数据，形状为 (N, C, H, W)。
+    - gamma: 缩放参数，形状为 (1, C, 1, 1)。
+    - beta: 平移参数，形状为 (1, C, 1, 1)。
+    - G: 整数，表示划分的 group 数量；应当是 C 的约数。
+    - gn_param: 字典，包含以下键：
+      - eps: 用于数值稳定性的常量。
 
-    返回 a tuple of:
-    - out: Output 数据, 的 形状 (N, C, H, W)
-    - cache: Values 需要 用于 反向传播
+    返回一个 tuple：
+    - out: 输出数据，形状为 (N, C, H, W)。
+    - cache: 反向传播所需的值。
     """
     out, cache = None, None
     eps = gn_param.get("eps", 1e-5)
     ###########################################################################
-    # TODO：实现 前向传播 用于 spatial group 归一化.       #
-    # This 将 be extremely similar 到 层 norm 实现.        #
-    # In particular, think about how you could transform 矩阵 so 该   #
-    # bulk 的 code is similar 到 both 训练-time batch 归一化  #
-    # and 层 归一化!                                                #
+    # TODO：实现 spatial group normalization 的前向传播。这个实现会非常类似于   #
+    # layer normalization。特别地，想想可以怎样变换矩阵，使主体代码既类似于     #
+    # 训练时 batch normalization，也类似于 layer normalization。                #
     ###########################################################################
 
     ###########################################################################
@@ -645,22 +609,22 @@ def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
 
 def spatial_groupnorm_backward(dout, cache):
     """
-    计算 反向传播 用于 spatial group 归一化.
+    计算 spatial group normalization 的反向传播。
 
     输入:
-    - dout: Upstream derivatives, 的 形状 (N, C, H, W)
-    - cache: Values 来自 前向传播
+    - dout: 上游导数，形状为 (N, C, H, W)。
+    - cache: 来自前向传播的值。
 
-    返回 a tuple of:
-    - dx: Gradient 使用 respect 到 输入, 的 形状 (N, C, H, W)
-    - dgamma: Gradient 使用 respect 到 缩放 parameter, 的 形状 (1, C, 1, 1)
-    - dbeta: Gradient 使用 respect 到 平移 parameter, 的 形状 (1, C, 1, 1)
+    返回一个 tuple：
+    - dx: 关于输入的梯度，形状为 (N, C, H, W)。
+    - dgamma: 关于缩放参数的梯度，形状为 (1, C, 1, 1)。
+    - dbeta: 关于平移参数的梯度，形状为 (1, C, 1, 1)。
     """
     dx, dgamma, dbeta = None, None, None
 
     ###########################################################################
-    # TODO：实现 反向传播 用于 spatial group 归一化.      #
-    # This 将 be extremely similar 到 层 norm 实现.        #
+    # TODO：实现 spatial group normalization 的反向传播。这个实现会非常类似于   #
+    # layer normalization。                                                     #
     ###########################################################################
 
     ###########################################################################
@@ -671,17 +635,15 @@ def spatial_groupnorm_backward(dout, cache):
 
 def svm_loss(x, y):
     """
-    计算 损失 并 梯度 使用 用于 multi类别 SVM 分类.
+    计算 multiclass SVM 分类的损失和梯度。
 
     输入:
-    - x: 输入 数据, 的 形状 (N, C) 其中 x[i, j] is score 用于 jth
-      类别 用于 ith 输入.
-    - y: Vector 的 标签, 的 形状 (N,) 其中 y[i] is 标签 用于 x[i] and
-      0 <= y[i] < C
+    - x: 输入数据，形状为 (N, C)，其中 x[i, j] 是第 i 个输入属于第 j 类的分数。
+    - y: 标签向量，形状为 (N,)，其中 y[i] 是 x[i] 的标签，且 0 <= y[i] < C。
 
-    返回 a tuple of:
-    - 损失: Scalar giving 损失
-    - dx: Gradient 的 损失 使用 respect 到 x
+    返回一个 tuple：
+    - loss: 标量，表示损失。
+    - dx: 关于 x 的损失梯度。
     """
     loss, dx = None, None
 
@@ -697,17 +659,15 @@ def svm_loss(x, y):
 
 def softmax_loss(x, y):
     """
-    计算 损失 并 梯度 用于 softmax 分类.
+    计算 softmax 分类的损失和梯度。
 
     输入:
-    - x: 输入 数据, 的 形状 (N, C) 其中 x[i, j] is score 用于 jth
-      类别 用于 ith 输入.
-    - y: Vector 的 标签, 的 形状 (N,) 其中 y[i] is 标签 用于 x[i] and
-      0 <= y[i] < C
+    - x: 输入数据，形状为 (N, C)，其中 x[i, j] 是第 i 个输入属于第 j 类的分数。
+    - y: 标签向量，形状为 (N,)，其中 y[i] 是 x[i] 的标签，且 0 <= y[i] < C。
 
-    返回 a tuple of:
-    - 损失: Scalar giving 损失
-    - dx: Gradient 的 损失 使用 respect 到 x
+    返回一个 tuple：
+    - loss: 标量，表示损失。
+    - dx: 关于 x 的损失梯度。
     """
     loss, dx = None, None
 

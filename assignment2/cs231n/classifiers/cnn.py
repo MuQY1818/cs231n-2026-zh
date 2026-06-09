@@ -8,13 +8,12 @@ from ..layer_utils import *
 
 class ThreeLayerConvNet(object):
     """
-    A three-层 convolutional network 使用 following architecture:
+    三层 convolutional network，使用如下架构:
 
     conv - relu - 2x2 max pool - affine - relu - affine - softmax
 
-    network operates on minibatches 的 数据 该 have 形状 (N, C, H, W)
-    consisting 的 N images, each 使用 height H 并 width W 并 使用 C 输入
-    channels.
+    该网络处理形状为 (N, C, H, W) 的数据 minibatch，其中包含 N 张图像，
+    每张图像有 C 个输入通道、高度 H、宽度 W。
     """
 
     def __init__(
@@ -29,37 +28,32 @@ class ThreeLayerConvNet(object):
         dtype=np.float32,
     ):
         """
-        初始化 a new network.
+        初始化一个新网络。
 
         输入:
-        - 输入_dim: Tuple (C, H, W) giving size 的 输入 数据
-        - num_filters: 数量 filters 到 使用 在 convolutional 层
-        - filter_size: Width/height 的 filters 到 使用 在 convolutional 层
-        - hidden_dim: 数量 units 到 使用 在 fully-connected hidden 层
-        - num_类别: 数量 分数 到 produce 来自 final affine 层.
-        - weight_缩放: Scalar giving 标准差 用于 random initialization
-          of 权重.
-        - reg: Scalar giving L2 正则化 strength
-        - dtype: numpy 数据type 到 使用 用于 computation.
+        - input_dim: 元组 (C, H, W)，给出输入数据大小。
+        - num_filters: convolutional layer 中使用的 filter 数量。
+        - filter_size: convolutional layer 中 filter 的宽度和高度。
+        - hidden_dim: fully-connected hidden layer 中的单元数量。
+        - num_classes: 最后一个 affine layer 输出的分数数量。
+        - weight_scale: 标量，表示随机初始化权重时使用的标准差。
+        - reg: 标量，表示 L2 regularization 强度。
+        - dtype: 计算时使用的 numpy datatype。
         """
         self.params = {}
         self.reg = reg
         self.dtype = dtype
 
         ############################################################################
-        # TODO: 初始化 权重 并 偏置 用于 three-层 convolutional    #
-        # network. Weights 应为 初始化 来自 a Gaussian centered at 0.0   #
-        # 使用 标准差 equal 到 weight_缩放; 偏置 应为          #
-        # 初始化 到 zero. All 权重 并 偏置 应为 存储 在      #
-        #  字典 self.params. 存储 权重 并 偏置 用于 convolutional  #
-        # 层 使用 keys 'W1' 并 'b1'; 使用 keys 'W2' 并 'b2' 用于       #
-        # 权重 并 偏置 的 hidden affine 层, 并 keys 'W3' 并 'b3'    #
-        # for 权重 并 偏置 的 输出 affine 层.                   #
+        # TODO: 初始化三层 convolutional network 的权重和偏置。权重应从均值为   #
+        # 0.0、标准差为 weight_scale 的 Gaussian 分布中初始化；偏置应初始化为    #
+        # 0。所有权重和偏置都应存入 self.params 字典。convolutional layer 的     #
+        # 权重和偏置使用键 'W1' 和 'b1'；hidden affine layer 使用 'W2' 和        #
+        # 'b2'；输出 affine layer 使用 'W3' 和 'b3'。                            #
         #                                                                          #
-        # IMPORTANT: For 这个 assignment, 你可以 assume 该 padding          #
-        # and stride 的 first convolutional 层 are chosen so 该           #
-        # **width 并 height 的 输入 are preserved**. Take a look at      #
-        # start 的 损失() 函数 到 see how 该 happens.                #
+        # 重要：在本作业中，可以假设第一个 convolutional layer 的 padding 和     #
+        # stride 会被设置为**保持输入的宽度和高度不变**。查看 loss() 函数开头，  #
+        # 可以看到这是如何实现的。                                                #
         ############################################################################
 
         ############################################################################
@@ -71,30 +65,29 @@ class ThreeLayerConvNet(object):
 
     def loss(self, X, y=None):
         """
-        Evaluate 损失 并 梯度 用于 three-层 convolutional network.
+        计算三层 convolutional network 的 loss 和梯度。
 
-        输入 / 输出: Same API as TwoLayerNet 在 fc_net.py.
+        输入 / 输出: API 与 fc_net.py 中的 TwoLayerNet 相同。
         """
         W1, b1 = self.params["W1"], self.params["b1"]
         W2, b2 = self.params["W2"], self.params["b2"]
         W3, b3 = self.params["W3"], self.params["b3"]
 
-        # pass conv_param 到 前向传播 用于 convolutional 层
-        # Padding 并 stride chosen 到 preserve 输入 spatial size
+        # 将 conv_param 传给 convolutional layer 的 forward pass。
+        # padding 和 stride 被设置为保持输入的空间尺寸不变。
         filter_size = W1.shape[2]
         conv_param = {"stride": 1, "pad": (filter_size - 1) // 2}
 
-        # pass pool_param 到 前向传播 用于 max-pooling 层
+        # 将 pool_param 传给 max-pooling layer 的 forward pass。
         pool_param = {"pool_height": 2, "pool_width": 2, "stride": 2}
 
         scores = None
         ############################################################################
-        # TODO：实现 前向传播 用于 three-层 convolutional net,  #
-        # 计算 类别分数 用于 X 并 storing them 在 分数          #
-        # 变量.                                                                #
+        # TODO：实现 three-layer convolutional net 的 forward pass，计算 X 的    #
+        # 类别分数并存入 scores 变量。                                           #
         #                                                                          #
-        # Remember 你可以 使用 函数 defined 在 cs231n/fast_层.py 并  #
-        # cs231n/层_utils.py 在 your 实现 (already imported).         #
+        # 记住，你可以在实现中使用 cs231n/fast_layers.py 和                      #
+        # cs231n/layer_utils.py 中定义的函数（已导入）。                         #
         ############################################################################
 
         ############################################################################
@@ -106,14 +99,12 @@ class ThreeLayerConvNet(object):
 
         loss, grads = 0, {}
         ############################################################################
-        # TODO：实现 反向传播 用于 three-层 convolutional net, #
-        # storing 损失 并 梯度 在 损失 并 grads 变量. 计算  #
-        # 数据 损失 使用 softmax, 并 确保 该 grads[k] holds 梯度 #
-        # for self.params[k]. 不要忘记 到 add L2 正则化!               #
+        # TODO：实现 three-layer convolutional net 的 backward pass，将 loss 和  #
+        # 梯度分别存入 loss 和 grads 变量。使用 softmax 计算 data loss，并确保   #
+        # grads[k] 保存 self.params[k] 的梯度。不要忘记加入 L2 regularization！  #
         #                                                                          #
-        # 注意： To ensure 该 your 实现 与参考实现匹配 并 能通过   #
-        # 自动测试, 确保 该 your L2 正则化 包含 a 因子 #
-        # of 0.5 到 简化表达式 用于 梯度.                      #
+        # 注意：为了让你的实现与参考实现匹配并通过自动测试，请确保 L2             #
+        # regularization 中包含 0.5 因子，以简化梯度表达式。                      #
         ############################################################################
 
         ############################################################################

@@ -4,65 +4,58 @@ from torch.nn import functional as F
 import math
 
 """
-This file defines layer types that are commonly used for transformers.
+此文件定义 transformer 中常用的 layer 类型。
 """
 
 class PositionalEncoding(nn.Module):
     """
-    Encodes information about positions 的 tokens 在 sequence. In
-    这个 case, 层 has no learnable 参数, since it is a simple
-    函数 的 sines 并 cosines.
+    编码序列中 token 的位置信息。这里的层没有可学习参数，因为它只是
+    由 sine 和 cosine 构成的简单函数。
     """
     def __init__(self, embed_dim, dropout=0.1, max_len=5000):
         """
-        Construct PositionalEncoding 层.
+        构造 PositionalEncoding 层。
 
         输入:
-         - embed_dim: size 的 embed 维度
+         - embed_dim: embedding 维度大小
          - dropout: dropout 值
-         - max_len: maximum possible length 的 输入的 sequence
+         - max_len: 输入序列的最大可能长度
         """
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
         assert embed_dim % 2 == 0
-        # Create an 数组 使用 a "batch 维度" 的 1 (which 将 broadcast
-        # across 所有 样本 在 batch).
+        # 创建一个 batch 维度为 1 的数组，该维度会广播到 batch 中的所有样本。
         pe = torch.zeros(1, max_len, embed_dim)
         ############################################################################
-        # TODO：构造 positional encoding 数组 as described 在            #
-        # Transformer_Captioning.ipynb.  goal is 用于 each row 到 alternate     #
-        # sine 并 cosine, 并 have exponents 的 0, 0, 2, 2, 4, 4, etc. up 到      #
-        # embed_dim. Of course 这个 exact specification is somewhat arbitrary, but #
-        # 这个 is what autograder is expecting. For 参考, our solution is #
-        # 小于 5 lines 的 code.                                               #
+        # TODO：按照 Transformer_Captioning.ipynb 中的描述构造 positional         #
+        # encoding 数组。目标是让每一行交替使用 sine 和 cosine，并让指数为       #
+        # 0, 0, 2, 2, 4, 4, ...，一直到 embed_dim。这个具体设定有些任意，        #
+        # 但 autograder 会按此检查。作为参考，我们的解法少于 5 行代码。          #
         ############################################################################
 
         ############################################################################
         #                             你的代码结束                             #
         ############################################################################
 
-        # Make sure positional encodings 将 be saved 使用 模型
-        # 参数 (mostly 用于 completeness).
+        # 确保 positional encoding 会随模型参数一起保存，主要是为了完整性。
         self.register_buffer('pe', pe)
 
     def forward(self, x):
         """
-        Element-wise add positional embeddings 到 输入 sequence.
+        将 positional embedding 按元素加到输入序列上。
 
         输入:
-         - x: sequence fed 到 positional encoder 模型, 的 形状
-              (N, S, D), 其中 N is batch size, S is sequence length and
-              D is embed dim
+         - x: 送入 positional encoder 的序列，形状为 (N, S, D)，其中
+              N 是 batch size，S 是 sequence length，D 是 embed dim
         返回:
-         - 输出: 输入 sequence + positional encodings, 的 形状 (N, S, D)
+         - output: 输入序列加上 positional encoding，形状为 (N, S, D)
         """
         N, S, D = x.shape
         # 创建占位变量，后续由你的代码覆盖。
         output = torch.empty((N, S, D))
         ############################################################################
-        # TODO：索引到 your 数组 的 positional encodings, 并 add         #
-        # appropriate ones 到 输入 sequence. 不要忘记 到 apply dropout    #
-        # afterward. This 应该 only take a few lines 的 code.                    #
+        # TODO：索引出需要的 positional encoding，并加到输入序列上。             #
+        # 不要忘记随后应用 dropout。这里应该只需要几行代码。                    #
         ############################################################################
 
         ############################################################################
@@ -73,38 +66,36 @@ class PositionalEncoding(nn.Module):
 
 class MultiHeadAttention(nn.Module):
     """
-    A 模型 层 which implements a simplified version 的 masked attention, as
-    introduced by "Attention Is All You Need" (https://arxiv.org/abs/1706.03762).
+    实现 masked attention 简化版本的模型层，出自
+    "Attention Is All You Need" (https://arxiv.org/abs/1706.03762)。
 
     Usage:
       attn = MultiHeadAttention(embed_dim, num_heads=2)
 
       # self-attention
-      数据 = torch.randn(batch_size, sequence_length, embed_dim)
-      self_attn_输出 = attn(query=数据, key=数据, 值=数据)
+      data = torch.randn(batch_size, sequence_length, embed_dim)
+      self_attn_output = attn(query=data, key=data, value=data)
 
-      # attention 使用 two 输入
-      other_数据 = torch.randn(batch_size, sequence_length, embed_dim)
-      attn_输出 = attn(query=数据, key=other_数据, 值=other_数据)
+      # attention with two inputs
+      other_data = torch.randn(batch_size, sequence_length, embed_dim)
+      attn_output = attn(query=data, key=other_data, value=other_data)
     """
 
     def __init__(self, embed_dim, num_heads, dropout=0.1):
         """
-        Construct a new MultiHeadAttention 层.
+        构造一个新的 MultiHeadAttention 层。
 
         输入:
-         - embed_dim: 维度 token embedding
-         - num_heads: 数量 attention heads
-         - dropout: Dropout probability
+         - embed_dim: token embedding 的维度
+         - num_heads: attention head 的数量
+         - dropout: Dropout 概率
         """
         super().__init__()
         assert embed_dim % num_heads == 0
 
-        # 我们将 初始化 这些 层 用于 you, since swapping ordering
-        # would affect random number generation (and therefore your exact
-        # 输出 relative 到 autograder). Note 该 层 使用 a bias
-        # term, but 这个 并不是 strictly necessary (and varies by
-        # 实现).
+        # 我们已经为你初始化这些层，因为更换顺序会影响随机数生成，
+        # 从而影响与 autograder 对比时的精确输出。注意这些层使用 bias，
+        # 但 bias 并非严格必要，不同实现可能不同。
         self.key = nn.Linear(embed_dim, embed_dim)
         self.query = nn.Linear(embed_dim, embed_dim)
         self.value = nn.Linear(embed_dim, embed_dim)
@@ -118,42 +109,37 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, query, key, value, attn_mask=None):
         """
-        Calculate masked attention 输出 用于 provided 数据, 计算
-        所有 attention heads 在 并行.
+        根据给定数据计算 masked attention 输出，并行计算所有 attention head。
 
-        In 形状 definitions below, N is batch size, S is source
-        sequence length, T is target sequence length, 并 E is embedding
-        维度.
+        在下面的形状定义中，N 是 batch size，S 是 source sequence length，
+        T 是 target sequence length，E 是 embedding 维度。
 
         输入:
-        - query: 输入 数据 被使用 as query, 的 形状 (N, S, E)
-        - key: 输入 数据 被使用 as key, 的 形状 (N, T, E)
-        - 值: 输入 数据 被使用 as 值, 的 形状 (N, T, E)
-        - attn_mask: Array 的 形状 (S, T) 其中 mask[i,j] == 0 indicates token
-          i 在 source 应该 not influence token j 在 target.
+        - query: 作为 query 的输入数据，形状为 (N, S, E)
+        - key: 作为 key 的输入数据，形状为 (N, T, E)
+        - value: 作为 value 的输入数据，形状为 (N, T, E)
+        - attn_mask: 形状为 (S, T) 的数组，其中 mask[i, j] == 0 表示
+          source 中的 token i 不应影响 target 中的 token j。
 
         返回:
-        - 输出: Tensor 的 形状 (N, S, E) giving weighted combination of
-          数据 在 值 根据 attention 权重 calculated 使用 key
-          and query.
+        - output: 形状为 (N, S, E) 的 tensor，表示根据 key 和 query
+          计算出的 attention 权重对 value 数据做加权组合。
         """
         N, S, E = query.shape
         N, T, E = value.shape
         # 创建占位变量，后续由你的代码覆盖。
         output = torch.empty((N, S, E))
         ############################################################################
-        # TODO：实现 multiheaded attention 使用 equations given 在       #
-        # Transformer_Captioning.ipynb.                                            #
-        # A few hints:                                                             #
-        #  1) You'll want 到 split your 形状 来自 (N, T, E) 到 (N, T, H, E/H),  #
-        #     其中 H is 数量 heads.                                      #
-        #  2) 函数 torch.matmul 允许 you 到 do a batched 矩阵 multiply.#
-        #     For 样本, 你可以 do (N, H, T, E/H) by (N, H, E/H, T) 到 yield a  #
-        #     形状 (N, H, T, T). For more 样本, see                           #
+        # TODO：使用 Transformer_Captioning.ipynb 中给出的公式实现               #
+        # multi-headed attention。                                                #
+        # 提示：                                                                  #
+        #  1) 需要把形状从 (N, T, E) 拆成 (N, T, H, E/H)，其中 H 是 head 数量。  #
+        #  2) torch.matmul 支持 batched matrix multiply。例如，                  #
+        #     (N, H, T, E/H) 与 (N, H, E/H, T) 相乘会得到 (N, H, T, T)。        #
+        #     更多示例见：                                                       #
         #     https://pytorch.org/docs/stable/generated/torch.matmul.html          #
-        #  3) For applying attn_mask, think how 分数 应为 modified 到   #
-        #     prevent a 值 来自 influencing 输出. 具体来说, PyTorch   #
-        #     函数 masked_fill may come 在 handy.                              #
+        #  3) 应用 attn_mask 时，思考如何修改分数来阻止某个 value 影响输出。     #
+        #     PyTorch 的 masked_fill 函数可能有用。                              #
         ############################################################################
 
         ############################################################################
@@ -165,12 +151,12 @@ class MultiHeadAttention(nn.Module):
 class FeedForwardNetwork(nn.Module):
     def __init__(self, embed_dim, ffn_dim, dropout=0.1):
         """
-        Simple two-层 feed-前向 network 使用 dropout 并 ReLU activation.
+        简单的两层 feed-forward network，使用 dropout 和 ReLU activation。
 
         输入:
-         - embed_dim: 维度 输入 并 输出 embeddings
-         - ffn_dim: Hidden 维度 在 feed前向 network
-         - dropout: Dropout probability
+         - embed_dim: 输入和输出 embedding 的维度
+         - ffn_dim: feed-forward network 的隐藏维度
+         - dropout: Dropout 概率
         """
         super().__init__()
         self.fc1 = nn.Linear(embed_dim, ffn_dim)
@@ -180,13 +166,13 @@ class FeedForwardNetwork(nn.Module):
 
     def forward(self, x):
         """
-        前向传播 用于 feed前向 network.
+        feed-forward network 的前向传播。
 
         输入:
-        - x: 输入 tensor 的 形状 (N, T, D)
+        - x: 输入 tensor，形状为 (N, T, D)
 
         返回:
-        - out: Output tensor 的 same 形状 as 输入
+        - out: 输出 tensor，形状与输入相同
         """
         out = torch.empty_like(x)
 
@@ -200,17 +186,17 @@ class FeedForwardNetwork(nn.Module):
 
 class TransformerDecoderLayer(nn.Module):
     """
-    A single 层 的 a Transformer decoder, 被使用 使用 TransformerDecoder.
+    Transformer decoder 中的单层，用于 TransformerDecoder。
     """
     def __init__(self, input_dim, num_heads, dim_feedforward=2048, dropout=0.1):
         """
-        Construct a TransformerDecoderLayer instance.
+        构造 TransformerDecoderLayer 实例。
 
         输入:
-         - 输入_dim: 数量 expected 特征 在 输入.
-         - num_heads: 数量 attention heads
-         - dim_feed前向: 维度 feed前向 network 模型.
-         - dropout: dropout 值.
+         - input_dim: 输入中特征的期望数量。
+         - num_heads: attention head 的数量。
+         - dim_feedforward: feed-forward network 的维度。
+         - dropout: dropout 值。
         """
         super().__init__()
         self.self_attn = MultiHeadAttention(input_dim, num_heads, dropout)
@@ -228,18 +214,18 @@ class TransformerDecoderLayer(nn.Module):
 
     def forward(self, tgt, memory, tgt_mask=None):
         """
-        Pass 输入 (and mask) through decoder 层.
+        将输入和 mask 送入 decoder 层。
 
         输入:
-        - tgt: sequence 到 decoder 层, 的 形状 (N, T, D)
-        - memory: sequence 来自 last 层 的 encoder, 的 形状 (N, S, D)
-        - tgt_mask: parts 的 target sequence 到 mask, 的 形状 (T, T)
+        - tgt: 送入 decoder 层的序列，形状为 (N, T, D)
+        - memory: 来自 encoder 最后一层的序列，形状为 (N, S, D)
+        - tgt_mask: target sequence 中需要 mask 的部分，形状为 (T, T)
 
         返回:
-        - out: Transformer 特征, 的 形状 (N, T, W)
+        - out: Transformer 特征，形状为 (N, T, W)
         """
 
-        # Self-attention block (参考 实现)
+        # Self-attention block（参考实现）
         shortcut = tgt
         tgt = self.self_attn(query=tgt, key=tgt, value=tgt, attn_mask=tgt_mask)
         tgt = self.dropout_self(tgt)
@@ -247,10 +233,10 @@ class TransformerDecoderLayer(nn.Module):
         tgt = self.norm_self(tgt)
 
         ############################################################################
-        # TODO：完成 decoder 层 by implementing remaining two       #
-        # sub层: (1) cross-attention block 使用 encoder 输出 as     #
-        # memory, 并 (2) feed前向 block. Each block 应该 follow      #
-        # same structure as self-attention implemented just above.                 #
+        # TODO：实现剩余两个子层来完成 decoder 层：                              #
+        # (1) 使用 encoder 输出作为 memory 的 cross-attention block；             #
+        # (2) feed-forward block。每个 block 都应遵循上面 self-attention          #
+        # 的相同结构。                                                           #
         ############################################################################
 
         ############################################################################
@@ -262,14 +248,14 @@ class TransformerDecoderLayer(nn.Module):
 
 class PatchEmbedding(nn.Module):
     """
-    A 层 该 splits an image 到 patches 并 projects each patch 到 an embedding vector.
-    使用 as 输入 层 的 a Vision Transformer (ViT).
+    将图像切分成 patches，并把每个 patch 投影为 embedding vector 的层。
+    作为 Vision Transformer (ViT) 的输入层。
 
     输入:
-    - img_size: Integer representing height/width 的 输入 image (assumes square image).
-    - patch_size: Integer representing height/width 的 each patch (square patch).
-    - in_channels: 数量 输入 image channels (e.g., 3 用于 RGB).
-    - embed_dim: 维度 linear embedding space.
+    - img_size: 输入图像的高/宽，假设为正方形。
+    - patch_size: 每个 patch 的高/宽，假设为正方形。
+    - in_channels: 输入图像通道数，例如 RGB 为 3。
+    - embed_dim: linear embedding space 的维度。
     """
     def __init__(self, img_size, patch_size, in_channels=3, embed_dim=128):
         super().__init__()
@@ -284,19 +270,19 @@ class PatchEmbedding(nn.Module):
         self.num_patches = (img_size // patch_size) ** 2
         self.patch_dim = patch_size * patch_size * in_channels
 
-        # Linear projection 的 flattened patches 到 embedding 维度
+        # 将展平后的 patches 线性投影到 embedding 维度。
         self.proj = nn.Linear(self.patch_dim, embed_dim)
 
 
     def forward(self, x):
         """
-        前向传播 用于 patch embedding.
+        patch embedding 的前向传播。
 
         输入:
-        - x: 输入 image tensor 的 形状 (N, C, H, W)
+        - x: 输入 image tensor，形状为 (N, C, H, W)
 
         返回:
-        - out: Patch embeddings 使用 形状 (N, num_patches, embed_dim)
+        - out: Patch embeddings，形状为 (N, num_patches, embed_dim)
         """
         N, C, H, W = x.shape
         assert H == self.img_size and W == self.img_size,\
@@ -304,12 +290,11 @@ class PatchEmbedding(nn.Module):
         out = torch.zeros(N, self.embed_dim)
 
         ############################################################################
-        # TODO：划分 image 到 non-在lapping patches 的 形状             #
-        # (C x patch_size x patch_size), 并 rearrange them 到 a tensor 的       #
-        # 形状 (N, num_patches, patch_dim). 不要 使用 a for-loop.                #
-        # Instead, 你可以 找到 torch.reshape 并 torch.permute helpful 用于 这个   #
-        # step. Once patches are flattened, embed them 到 latent vectors     #
-        # 使用 projection 层.                                              #
+        # TODO：将 image 划分为形状为 (C x patch_size x patch_size) 的          #
+        # non-overlapping patches，并重排成形状为 (N, num_patches, patch_dim)  #
+        # 的 tensor。不要使用 for-loop。torch.reshape 和 torch.permute          #
+        # 可能对这一步有帮助。patch 展平后，使用 projection 层将其嵌入为        #
+        # latent vector。                                                       #
         ############################################################################
 
         ############################################################################
@@ -322,17 +307,17 @@ class PatchEmbedding(nn.Module):
 
 class TransformerEncoderLayer(nn.Module):
     """
-    A single 层 的 a Transformer encoder, 被使用 使用 TransformerEncoder.
+    Transformer encoder 中的单层，用于 TransformerEncoder。
     """
     def __init__(self, input_dim, num_heads, dim_feedforward=2048, dropout=0.1):
         """
-        Construct a TransformerEncoderLayer instance.
+        构造 TransformerEncoderLayer 实例。
 
         输入:
-         - 输入_dim: 数量 expected 特征 在 输入.
-         - num_heads: 数量 attention heads.
-         - dim_feed前向: 维度 feed前向 network 模型.
-         - dropout: dropout 值.
+         - input_dim: 输入中特征的期望数量。
+         - num_heads: attention head 的数量。
+         - dim_feedforward: feed-forward network 的维度。
+         - dropout: dropout 值。
         """
         super().__init__()
         self.self_attn = MultiHeadAttention(input_dim, num_heads, dropout)
@@ -346,18 +331,18 @@ class TransformerEncoderLayer(nn.Module):
 
     def forward(self, src, src_mask=None):
         """
-        Pass 输入 (and mask) through encoder 层.
+        将输入和 mask 送入 encoder 层。
 
         输入:
-        - src: sequence 到 encoder 层, 的 形状 (N, S, D)
-        - src_mask: parts 的 source sequence 到 mask, 的 形状 (S, S)
+        - src: 送入 encoder 层的序列，形状为 (N, S, D)
+        - src_mask: source sequence 中需要 mask 的部分，形状为 (S, S)
 
         返回:
-        - out: Transformer 特征, 的 形状 (N, S, D)
+        - out: Transformer 特征，形状为 (N, S, D)
         """
         ############################################################################
-        # TODO：实现 encoder 层 by applying self-attention followed    #
-        # by a feed前向 block. This code 将 be very similar 到 decoder 层. #
+        # TODO：依次应用 self-attention 和 feed-forward block 来实现 encoder 层。 #
+        # 这段代码会和 decoder 层非常相似。                                      #
         ############################################################################
 
         ############################################################################

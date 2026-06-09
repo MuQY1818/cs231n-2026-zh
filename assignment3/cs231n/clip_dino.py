@@ -12,19 +12,19 @@ from tqdm.auto import tqdm
 
 def get_similarity_no_loop(text_features, image_features):
     """
-    计算 pairwise cosine similarity between text 并 image 特征 vectors.
+    计算 text feature vector 和 image feature vector 之间的 pairwise cosine similarity。
 
     参数:
-        text_特征 (torch.Tensor): A tensor 的 形状 (N, D).
-        image_特征 (torch.Tensor): A tensor 的 形状 (M, D).
+        text_features (torch.Tensor): 形状为 (N, D) 的 tensor.
+        image_features (torch.Tensor): 形状为 (M, D) 的 tensor.
 
     返回:
-        torch.Tensor: A similarity 矩阵 的 形状 (N, M), 其中 each entry (i, j)
-        is cosine similarity between text_特征[i] 并 image_特征[j].
+        torch.Tensor: 形状为 (N, M) 的 similarity 矩阵，其中每个元素 (i, j)
+        是 text_features[i] 和 image_features[j] 之间的 cosine similarity。
     """
     similarity = None
     ############################################################################
-    # TODO: 计算 cosine similarity. Do NOT 使用 用于 loops.               #
+    # TODO: 计算 cosine similarity。不要使用 for loop。                  #
     ############################################################################
 
     ############################################################################
@@ -40,27 +40,23 @@ def clip_zero_shot_classifier(clip_model, clip_preprocess, images,
     """使用 CLIP 模型执行 zero-shot 图像分类。
 
     参数:
-        clip_模型 (torch.nn.Module): pre-训练ed CLIP 模型 用于 encoding
-            images 并 text.
-        clip_preprocess (Callable): A preprocessing 函数 到 apply 到 each
-            image before encoding.
-        images (List[np.nd数组]): A list 的 输入 images as NumPy 数组
-            (H x W x C) uint8.
-        类别_texts (List[str]): A list 的 类别 标签 strings 用于 zero-shot
-            分类.
-        device (torch.device): device on which computation 应为
-            performed. Pass text_tokens 到 这个 device before passing it to
-            clip_模型.
+        clip_model (torch.nn.Module): 用于编码 images 和 text 的 pretrained
+            CLIP 模型.
+        clip_preprocess (Callable): 编码前应用到每张 image 的 preprocessing 函数.
+        images (List[np.ndarray]): 输入 images 列表，每张为 (H x W x C) 的
+            uint8 NumPy 数组.
+        class_texts (List[str]): zero-shot 分类使用的类别标签字符串列表.
+        device (torch.device): 执行计算的 device。将 text_tokens 传入
+            clip_model 前，应先移动到这个 device.
 
     返回:
-        List[str]: Predicted 类别 标签 用于 each image, selected 来自 the
-            given 类别_texts.
+        List[str]: 每张 image 的预测类别标签，从给定 class_texts 中选择。
     """
     
     pred_classes = []
 
     ############################################################################
-    # TODO: Find 类别 标签 用于 images.                                  #
+    # TODO: 为 images 找到对应的类别标签。                               #
     ############################################################################
 
     ############################################################################
@@ -72,23 +68,23 @@ def clip_zero_shot_classifier(clip_model, clip_preprocess, images,
 
 class CLIPImageRetriever:
     """
-    A simple image retrieval system 使用 CLIP.
+    使用 CLIP 的简单 image retrieval system。
     """
     
     @torch.no_grad()
     def __init__(self, clip_model, clip_preprocess, images, device):
         """
         参数:
-          clip_模型 (torch.nn.Module): pre-训练ed CLIP 模型.
-          clip_preprocess (Callable): Function 到 preprocess images.
-          images (List[np.nd数组]): List 的 images as NumPy 数组 (H x W x C).
-          device (torch.device): device 用于 模型 execution.
+          clip_model (torch.nn.Module): pretrained CLIP 模型.
+          clip_preprocess (Callable): 用于预处理 images 的函数.
+          images (List[np.ndarray]): image 列表，每张为 NumPy 数组 (H x W x C).
+          device (torch.device): 模型执行所用 device.
         """
         ############################################################################
-        # TODO: 存储 所有 necessary object 变量 到 使用 在 retrieve method.    #
-        # Note 该 你应该 process 所有 images at once here 并 avoid repeated  #
-        # computation 用于 each text query. 你可以 end up NOT 使用 above      #
-        # similarity 函数 用于 most 计算-optimal 实现.#
+        # TODO: 存储 retrieve 方法需要的所有对象变量。                           #
+        # 注意：你应该在这里一次性处理所有 images，避免对每个 text query         #
+        # 重复计算。为了获得更优计算效率，你最终可以不使用上面的 similarity      #
+        # 函数。                                                                 #
         ############################################################################
 
         ############################################################################
@@ -99,19 +95,19 @@ class CLIPImageRetriever:
     @torch.no_grad()
     def retrieve(self, query: str, k: int = 2):
         """
-        Retrieves indices 的 top-k images most similar 到 输入 text.
-        你可以 找到 torch.Tensor.topk method 使用ful.
+        检索与输入 text 最相似的 top-k images 的索引。
+        torch.Tensor.topk 方法可能有用。
 
         参数:
             query (str): text query.
-            k (int): Return top k images.
+            k (int): 返回 top k images.
 
         返回:
-            List[int]: Indices 的 top-k most similar images.
+            List[int]: top-k 最相似 images 的索引.
         """
         top_indices = []
         ############################################################################
-        # TODO: Retrieve indices 的 top-k images.                              #
+        # TODO: 检索 top-k images 的索引。                                      #
         ############################################################################
 
         ############################################################################
@@ -170,38 +166,38 @@ class DavisDataset:
 
 def create_segmentation_overlay(segmentation_mask, image, alpha=0.5):
     """
-    Generate a colored segmentation 在lay on top 的 an RGB image.
+    在 RGB image 上生成彩色 segmentation overlay。
 
     Parameters:
-        segmentation_mask (np.nd数组): 2D 数组 的 形状 (H, W), 使用 类别 indices.
-        image (np.nd数组): 3D 数组 的 形状 (H, W, 3), RGB image.
-        alpha (float): Transparency 因子 用于 在lay (0 = only image, 1 = only mask).
+        segmentation_mask (np.ndarray): 形状为 (H, W) 的 2D 数组，存放类别索引.
+        image (np.ndarray): 形状为 (H, W, 3) 的 3D 数组，RGB image.
+        alpha (float): overlay 透明度系数，0 表示只显示 image，1 表示只显示 mask.
 
     返回:
-        np.nd数组: Image 使用 segmentation 在lay (形状: (H, W, 3), dtype: uint8).
+        np.ndarray: 带 segmentation overlay 的 image，形状为 (H, W, 3)，dtype 为 uint8.
     """
     assert segmentation_mask.shape[:2] == image.shape[:2], "Segmentation and image size mismatch"
     assert image.dtype == np.uint8, "Image must be of type uint8"
 
-    # Generate deterministic colors 用于 each 类别 使用 a fixed colormap
+    # 使用固定 colormap 为每个类别生成确定性颜色。
     def generate_colormap(n):
-        np.random.seed(42)  # For determinism
+        np.random.seed(42)  # 确保结果确定
         colormap = np.random.randint(0, 256, size=(n, 3), dtype=np.uint8)
         return colormap
 
     colormap = generate_colormap(10)
 
-    # Create a color image 用于 segmentation mask
+    # 为 segmentation mask 创建彩色图像。
     seg_color = colormap[segmentation_mask]  # 形状: (H, W, 3)
 
-    # Blend 使用 original image
+    # 与原始 image 混合。
     overlay = cv2.addWeighted(image, 1 - alpha, seg_color, alpha, 0)
 
     return overlay
 
 
 def compute_iou(pred, gt, num_classes):
-    """计算平均 Intersection 在 Union（IoU）。"""
+    """计算平均 Intersection over Union（IoU）。"""
     iou = 0
     for ci in range(num_classes):
         p = pred == ci
@@ -213,22 +209,21 @@ def compute_iou(pred, gt, num_classes):
 class DINOSegmentation:
     def __init__(self, device, num_classes: int, inp_dim : int = 384):
         """
-        初始化 DINOSegmentation 模型.
+        初始化 DINOSegmentation 模型。
 
-        This defines a simple neural network designed 到  类别ify DINO 特征
-        vectors 到 segmentation 类别. It 包含 模型 initialization,
-        optimizer, 并 损失 函数 setup.
+        这里定义一个简单神经网络，用于把 DINO feature vector 分类为
+        segmentation 类别，并完成模型、optimizer 和损失函数的初始化。
 
         参数:
-            device (torch.device): Device 到 run 模型 on (CPU or CUDA).
-            num_类别 (int): 数量 segmentation 类别.
-            inp_dim (int, optional): Dimensionality 的 输入 DINO 特征.
+            device (torch.device): 运行模型的 device（CPU 或 CUDA）。
+            num_classes (int): segmentation 类别数量。
+            inp_dim (int, optional): 输入 DINO feature 的维度。
         """
 
         ############################################################################
-        # TODO: Define a very lightweight pytorch 模型, optimizer, 并 损失       #
-        # 函数 到 训练 类别ify each DINO 特征 vector 到 a seg. 类别.   #
-        # It 可以 be a linear 层 or two 层 neural network.                    #
+        # TODO: 定义一个非常轻量的 PyTorch 模型、optimizer 和损失函数，用于      #
+        # 训练模型把每个 DINO feature vector 分类到一个 segmentation 类别。       #
+        # 它可以是一个线性层，也可以是两层 neural network。                      #
         ############################################################################
 
         ############################################################################
@@ -240,12 +235,12 @@ class DINOSegmentation:
         """使用提供的训练数据训练分割模型。
 
         参数:
-            X_训练 (torch.Tensor): 输入 特征 vectors 的 形状 (N, D).
-            Y_训练 (torch.Tensor): Ground truth 标签 的 形状 (N,).
-            num_iters (int, optional): 数量 optimization steps.
+            X_train (torch.Tensor): 输入 feature vectors，形状为 (N, D).
+            Y_train (torch.Tensor): Ground truth labels，形状为 (N,).
+            num_iters (int, optional): optimization step 数量。
         """
         ############################################################################
-        # TODO：训练 your 模型 用于 `num_iters` steps.                            #
+        # TODO：训练你的模型，共进行 `num_iters` step。                          #
         ############################################################################
 
         ############################################################################
@@ -258,14 +253,14 @@ class DINOSegmentation:
         """在给定测试 DINO 特征向量上执行推理。
 
         参数:
-            X_测试 (torch.Tensor): 输入 特征 vectors 的 形状 (N, D).
+            X_test (torch.Tensor): 输入 feature vectors，形状为 (N, D).
 
         返回:
-            torch.Tensor 的 形状 (N,): Predicted 类别 indices.
+            形状为 (N,) 的 torch.Tensor：预测类别索引。
         """
         pred_classes = None
         ############################################################################
-        # TODO：训练 your 模型 用于 `num_iters` steps.                            #
+        # TODO：使用你的模型预测类别。                                           #
         ############################################################################
 
         ############################################################################

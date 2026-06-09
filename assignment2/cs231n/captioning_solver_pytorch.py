@@ -8,62 +8,56 @@ import torch
 
 class CaptioningSolverPytorch(object):
     """
-    A CaptioningSolverPytorch encapsulates 所有 logic necessary for
-    训练 Pytorch based image captioning 模型.
+    CaptioningSolverPytorch 封装了训练基于 PyTorch 的 image captioning 模型所需的
+    全部逻辑。
 
-    To 训练 a 模型, you 将 first construct a CaptioningSolver instance,
-    passing 模型, 数据集, 并 various options (学习率, batch size,
-    etc) 到 constructor. You 将 然后 调用 训练() method 到 run the
-    optimization procedure 并 训练 模型.
+    要训练模型，首先构造一个 CaptioningSolver 实例，将模型、数据集以及各种选项
+    （learning rate、batch size 等）传给构造函数。然后调用 train() 方法运行
+    optimization 过程并训练模型。
 
-    After 训练() method returns, instance 变量 solver.损失_history
-    将 contain a list 的 所有 损失 encountered during 训练.
+    train() 方法返回后，实例变量 solver.loss_history 会包含训练过程中遇到的所有
+    loss。
 
-    Example usage 可能 look something like 这个:
+    示例用法大致如下:
 
-    数据 = load_coco_数据()
-    模型 = MyAwesomeModel(hidden_dim=100)
-    solver = CaptioningSolver(模型, 数据,
+    data = load_coco_data()
+    model = MyAwesomeModel(hidden_dim=100)
+    solver = CaptioningSolver(model, data,
                     optim_config={
                       'learning_rate': 1e-3,
                     },
                     num_epochs=10, batch_size=100,
                     print_every=100)
-    solver.训练()
+    solver.train()
 
 
-    A CaptioningSolverPytorch works on a 模型 object 该 must conform 到 following
-    API:
+    CaptioningSolverPytorch 作用于一个必须符合以下 API 的 model 对象:
 
       输入:
-      - 特征: Array giving a minibatch 的 特征 用于 images, 的 形状 (N, D
-      - captions: Array 的 captions 用于 those images, 的 形状 (N, T) 其中
-        each element is 在 range (0, V].
+      - features: 给出图像特征 minibatch 的数组，形状为 (N, D)
+      - captions: 这些图像对应的 captions 数组，形状为 (N, T)，其中每个元素都在
+        (0, V] 范围内。
 
       返回:
-      - 损失: Scalar giving 损失
-      - grads: Dictionary 使用 same keys as self.params mapping parameter
-        names 到 梯度 的 损失 使用 respect 到 those 参数.
+      - loss: 标量 loss
+      - grads: 字典，键与 self.params 相同，将参数名映射到 loss 关于这些参数的梯度。
     """
 
     def __init__(self, model, data, **kwargs):
         """
-        Construct a new CaptioningSolver instance.
+        构造一个新的 CaptioningSolver 实例。
 
         Required arguments:
-        - 模型: A 模型 object conforming 到 API described above
-        - 数据: A 字典 的 训练 并 验证 数据 来自 load_coco_数据
+        - model: 符合上述 API 的 model 对象
+        - data: 来自 load_coco_data 的训练和验证数据字典
 
         Optional arguments:
 
-        - learning_rate: Learning rate 的 optimizer.
-        - batch_size: Size 的 minibatches 使用 到 计算 损失 并 梯度 during
-          训练.
-        - num_epochs: 数量 epochs 到 run 用于 during 训练.
-        - print_every: Integer; 训练 损失 将 be printed every print_every
-          iterations.
-        - verbose: Boolean; if set 到 false 然后 no 输出 将 be printed during
-          训练.
+        - learning_rate: optimizer 的 learning rate。
+        - batch_size: 训练时用于计算 loss 和梯度的 minibatch 大小。
+        - num_epochs: 训练期间运行的 epoch 数。
+        - print_every: 整数；每隔 print_every 次 iteration 打印 training loss。
+        - verbose: Boolean；如果设为 false，则训练期间不打印输出。
         """
         self.model = model
         self.data = data
@@ -86,8 +80,7 @@ class CaptioningSolverPytorch(object):
 
     def _reset(self):
         """
-        Set up some book-keeping 变量 用于 optimization. Don't 调用 这个
-        手动.
+        设置 optimization 需要的记录变量。不要手动调用这个方法。
         """
         # 设置若干变量用于记录训练过程
         self.epoch = 0
@@ -96,8 +89,7 @@ class CaptioningSolverPytorch(object):
 
     def _step(self):
         """
-        Make a single 梯度 update. This is 调用 by 训练() 并 应该 not
-        be 调用 手动.
+        执行单次梯度更新。该方法由 train() 调用，不应手动调用。
         """
         # 构造一个训练数据 minibatch
         minibatch = sample_coco_minibatch(
@@ -115,7 +107,7 @@ class CaptioningSolverPytorch(object):
 
     def train(self):
         """
-        Run optimization 到 训练 模型.
+        运行 optimization 来训练模型。
         """
         for k, v in self.model.params.items():
           v.requires_grad_()
@@ -139,4 +131,3 @@ class CaptioningSolverPytorch(object):
 
         for k, v in self.model.params.items():
           v.requires_grad_(False)
-

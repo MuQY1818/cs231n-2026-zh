@@ -3,7 +3,7 @@ import numpy as np
 
 
 def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
-    # First figure out what size 的 输出 应为
+    # 先计算输出应该是什么大小
     N, C, H, W = x_shape
     assert (H + 2 * padding - field_height) % stride == 0
     assert (W + 2 * padding - field_height) % stride == 0

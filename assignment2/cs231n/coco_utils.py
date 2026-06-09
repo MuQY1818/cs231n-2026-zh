@@ -49,7 +49,7 @@ def load_coco_data(base_dir=BASE_DIR, max_train=None, pca_features=True):
         mask = np.random.randint(num_train, size=max_train)
         data["train_captions"] = data["train_captions"][mask]
         data["train_image_idxs"] = data["train_image_idxs"][mask]
-#         数据["训练_特征"] = 数据["训练_特征"][数据["训练_image_idxs"]]
+#         data["train_features"] = data["train_features"][data["train_image_idxs"]]
     return data
 
 

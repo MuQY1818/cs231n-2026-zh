@@ -9,26 +9,24 @@ from ..transformer_layers import *
 
 class CaptioningTransformer(nn.Module):
     """
-    A CaptioningTransformer produces captions 来自 图像特征 使用 a
-    Transformer decoder.
+    CaptioningTransformer 使用 Transformer decoder 根据图像特征生成 caption。
 
-    Transformer receives 输入 vectors 的 size D, has a vocab size 的 V,
-    works on sequences 的 length T, 使用s word vectors 的 维度 W, and
-    operates on minibatches 的 size N.
+    Transformer 接收维度为 D 的输入向量，词表大小为 V，处理长度为 T 的序列，
+    使用维度为 W 的 word vector，并按大小为 N 的 minibatch 运行。
     """
     def __init__(self, word_to_idx, input_dim, wordvec_dim, num_heads=4,
                  num_layers=2, max_length=50):
         """
-        Construct a new CaptioningTransformer instance.
+        构造一个新的 CaptioningTransformer 实例。
 
         输入:
-        - word_to_idx: A 字典 giving vocabulary. It contains V entries.
-          and maps each string 到 a unique integer 在 range [0, V).
-        - 输入_dim: Dimension D 的 输入 image 特征 vectors.
-        - wordvec_dim: Dimension W 的 word vectors.
-        - num_heads: 数量 attention heads.
-        - num_层: 数量 transformer 层.
-        - max_length: Max possible sequence length.
+        - word_to_idx: 给出词表的字典，包含 V 个条目，并将每个字符串映射到
+          区间 [0, V) 内唯一的整数。
+        - input_dim: 输入图像特征向量的维度 D。
+        - wordvec_dim: word vector 的维度 W。
+        - num_heads: attention head 的数量。
+        - num_layers: transformer 层数。
+        - max_length: 最大可能序列长度。
         """
         super().__init__()
 
@@ -50,7 +48,7 @@ class CaptioningTransformer(nn.Module):
 
     def _init_weights(self, module):
         """
-        初始化 权重 网络的.
+        初始化网络权重。
         """
         if isinstance(module, (nn.Linear, nn.Embedding)):
             module.weight.data.normal_(mean=0.0, std=0.02)
@@ -62,31 +60,28 @@ class CaptioningTransformer(nn.Module):
 
     def forward(self, features, captions):
         """
-        Given 图像特征 并 caption tokens, return a distribution 在 the
-        possible tokens 用于 each timestep. Note 该 since entire sequence
-        of captions is provided 所有 at once, we mask out future timesteps.
+        给定图像特征和 caption token，返回每个时间步上的 token 分布。
+        由于会一次性提供完整 caption 序列，需要 mask 掉未来时间步。
 
         输入:
-         - 特征: 图像特征, 的 形状 (N, D)
-         - captions: ground truth captions, 的 形状 (N, T)
+         - features: 图像特征，形状为 (N, D)
+         - captions: ground truth captions，形状为 (N, T)
 
         返回:
-         - 分数: score 用于 each token at each timestep, 的 形状 (N, T, V)
+         - scores: 每个时间步上各 token 的分数，形状为 (N, T, V)
         """
         N, T = captions.shape
         # 创建占位变量，后续由你的代码覆盖。
         scores = torch.empty((N, T, self.vocab_size))
         ############################################################################
-        # TODO：实现 前向 函数 用于 CaptionTransformer.             #
-        # A few hints:                                                             #
-        #  1) You first have 到 embed your caption 并 add positional              #
-        #     encoding. You 然后 have 到 project 图像特征 到 same  #
-        #     维度.                                                          #
-        #  2) You have 到 prepare a mask (tgt_mask) 用于 masking out future     #
-        #     timesteps 在 captions. torch.tril() 函数 可能 help 在 preparing #
-        #     这个 mask.                                                           #
-        #  3) 最后, apply decoder 特征 on text & image embeddings   #
-        #     along 使用 tgt_mask. Project 输出 到 分数 per token      #
+        # TODO：实现 CaptionTransformer 的 forward 函数。                         #
+        # 提示：                                                                  #
+        #  1) 先对 caption 做 embedding 并加入 positional encoding；随后将图像   #
+        #     特征投影到相同维度。                                                #
+        #  2) 准备一个 mask (tgt_mask) 来屏蔽 caption 中的未来时间步。            #
+        #     torch.tril() 可能有助于构造这个 mask。                              #
+        #  3) 最后，将 text embedding 和 image embedding 连同 tgt_mask 输入       #
+        #     decoder，并把输出投影为每个 token 的分数。                          #
         ############################################################################
 
         ############################################################################
@@ -97,23 +92,23 @@ class CaptioningTransformer(nn.Module):
 
     def sample(self, features, max_length=30):
         """
-        Given 图像特征, 使用 greedy decoding 到 predict image caption.
+        给定图像特征，使用 greedy decoding 预测 image caption。
 
         输入:
-         - 特征: 图像特征, 的 形状 (N, D)
-         - max_length: maximum possible caption length
+         - features: 图像特征，形状为 (N, D)
+         - max_length: 最大可能 caption 长度
 
         返回:
-         - captions: captions 用于 each 样本, 的 形状 (N, max_length)
+         - captions: 每个样本的 captions，形状为 (N, max_length)
         """
         with torch.no_grad():
             features = torch.Tensor(features)
             N = features.shape[0]
 
-            # Create an empty captions tensor (其中 所有 tokens are NULL).
+            # 创建一个空 captions tensor，其中所有 token 都是 NULL。
             captions = self._null * np.ones((N, max_length), dtype=np.int32)
 
-            # Create a partial caption, 使用 only start token.
+            # 创建只包含 start token 的 partial caption。
             partial_caption = self._start * np.ones(N, dtype=np.int32)
             partial_caption = torch.LongTensor(partial_caption)
             # [N] -> [N, 1]
@@ -121,15 +116,15 @@ class CaptioningTransformer(nn.Module):
 
             for t in range(max_length):
 
-                # Predict next token (ignoring 所有 other time steps).
+                # 预测下一个 token，忽略其他时间步。
                 output_logits = self.forward(features, partial_caption)
                 output_logits = output_logits[:, -1, :]
 
-                # Choose most likely word ID 来自 vocabulary.
+                # 从词表中选择概率最高的 word ID。
                 # [N, V] -> [N]
                 word = torch.argmax(output_logits, axis=1)
 
-                # Update our 在所有 caption 并 our current partial caption.
+                # 更新完整 caption 和当前 partial caption。
                 captions[:, t] = word.numpy()
                 word = word.unsqueeze(1)
                 partial_caption = torch.cat([partial_caption, word], dim=1)
@@ -138,7 +133,7 @@ class CaptioningTransformer(nn.Module):
 
 
 def clones(module, N):
-    'Produce N identical 层.'
+    '生成 N 个相同的层。'
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
@@ -175,22 +170,22 @@ class TransformerEncoder(nn.Module):
 
 class VisionTransformer(nn.Module):
     """
-    Vision Transformer (ViT) 实现.
+    Vision Transformer (ViT) 实现。
     """
     def __init__(self, img_size=32, patch_size=8, in_channels=3,
                  embed_dim=128, num_layers=6, num_heads=4,
                  dim_feedforward=256, num_classes=10, dropout=0.1):
         """
         输入:
-         - img_size: Size 的 输入 image (assumed square).
-         - patch_size: Size 的 each patch (assumed square).
-         - in_channels: 数量 image channels.
-         - embed_dim: Embedding 维度 用于 each patch.
-         - num_层: 数量 Transformer encoder 层.
-         - num_heads: 数量 attention heads.
-         - dim_feed前向: Hidden size 的 feed前向 network.
-         - num_类别: 数量 分类 标签.
-         - dropout: Dropout probability.
+         - img_size: 输入图像大小，假设为正方形。
+         - patch_size: 每个 patch 的大小，假设为正方形。
+         - in_channels: 图像通道数。
+         - embed_dim: 每个 patch 的 embedding 维度。
+         - num_layers: Transformer encoder 层数。
+         - num_heads: attention head 的数量。
+         - dim_feedforward: feed-forward network 的隐藏层大小。
+         - num_classes: 分类标签数量。
+         - dropout: Dropout 概率。
         """
         super().__init__()
         self.num_classes = num_classes
@@ -200,7 +195,7 @@ class VisionTransformer(nn.Module):
         encoder_layer = TransformerEncoderLayer(embed_dim, num_heads, dim_feedforward, dropout)
         self.transformer = TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-        # Final 分类 层 到 predict 类别分数 来自 pooled token.
+        # 最终分类层，根据 pooled token 预测类别分数。
         self.head = nn.Linear(embed_dim, num_classes)
 
         self.apply(self._init_weights)
@@ -208,7 +203,7 @@ class VisionTransformer(nn.Module):
 
     def _init_weights(self, module):
         """
-        初始化 权重 网络的.
+        初始化网络权重。
         """
         if isinstance(module, (nn.Linear, nn.Embedding)):
             module.weight.data.normal_(mean=0.0, std=0.02)
@@ -220,25 +215,25 @@ class VisionTransformer(nn.Module):
 
     def forward(self, x):
         """
-        前向传播 的 Vision Transformer.
+        Vision Transformer 的前向传播。
 
         输入:
-         - x: 输入 image tensor 的 形状 (N, C, H, W)
+         - x: 输入 image tensor，形状为 (N, C, H, W)
 
         返回:
-         - logits: Output 分类 logits 的 形状 (N, num_类别)
+         - logits: 输出分类 logits，形状为 (N, num_classes)
         """
         N = x.size(0)
         logits = torch.zeros(N, self.num_classes, device=x.device)
         
         ############################################################################
-        # TODO：实现 前向传播 的 Vision Transformer.             #
-        # 1. Convert 输入 image 到 a sequence 的 patch vectors.            #
-        # 2. Add positional encodings 到 retain spatial information.              #
-        # 3. Pass sequence through Transformer encoder.                   #
-        # 4. Average pool patch vectors 到 get a 特征 vector 用于 each image.   #
-        #    你可以 找到 torch.均值 使用ful.                                      #
-        # 5. Feed it through a linear 层 到 produce 类别 logits.              #
+        # TODO：实现 Vision Transformer 的前向传播。                              #
+        # 1. 将输入图像转换为 patch vector 序列。                                 #
+        # 2. 加入 positional encoding，以保留空间信息。                           #
+        # 3. 将序列送入 Transformer encoder。                                     #
+        # 4. 对 patch vector 做 average pooling，得到每张图像的特征向量。         #
+        #    torch.mean 可能有用。                                                #
+        # 5. 将特征向量送入线性层，生成类别 logits。                              #
         ############################################################################
 
         ############################################################################
